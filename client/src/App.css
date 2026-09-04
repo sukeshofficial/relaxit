@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Geist", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 103px;
+}
+
+.wordmark {
+  width: 200px;
+  height: 103px;
+}
