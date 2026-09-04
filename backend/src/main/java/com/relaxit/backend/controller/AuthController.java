@@ -1,5 +1,13 @@
 package com.relaxit.backend.controller;
 
+import com.relaxit.backend.dto.auth.ForgotPasswordRequest;
+import com.relaxit.backend.dto.auth.LoginRequest;
+import com.relaxit.backend.dto.auth.LoginResponse;
+import com.relaxit.backend.dto.auth.RegisterRequest;
+import com.relaxit.backend.dto.auth.RegisterResponse;
+import com.relaxit.backend.dto.auth.ResetPasswordRequest;
+import com.relaxit.backend.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,11 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.relaxit.backend.dto.auth.RegisterRequest;
-import com.relaxit.backend.dto.auth.RegisterResponse;
-import com.relaxit.backend.service.AuthService;
-
-import jakarta.validation.Valid;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -34,10 +38,23 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<com.relaxit.backend.dto.auth.LoginResponse> login(
-      @Valid @RequestBody com.relaxit.backend.dto.auth.LoginRequest request) {
-    com.relaxit.backend.dto.auth.LoginResponse response = authService.login(request);
+  public ResponseEntity<LoginResponse> login(
+      @Valid @RequestBody LoginRequest request) {
+    LoginResponse response = authService.login(request);
     return ResponseEntity.ok(response);
   }
 
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Map<String, Object>> forgotPassword(
+      @Valid @RequestBody ForgotPasswordRequest request) {
+    Map<String, Object> response = authService.forgotPassword(request);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<Map<String, Object>> resetPassword(
+      @Valid @RequestBody ResetPasswordRequest request) {
+    Map<String, Object> response = authService.resetPassword(request);
+    return ResponseEntity.ok(response);
+  }
 }
