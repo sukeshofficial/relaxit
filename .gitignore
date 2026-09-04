@@ -20,6 +20,9 @@ Thumbs.db
 # Log files
 *.log
 
+# Dependencies
+node_modules/
+
 # Sensitive environment / configuration files
 .env
 *.env

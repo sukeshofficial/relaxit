@@ -43,6 +43,24 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
   }
 
+  @ExceptionHandler(DeviceAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleDeviceAlreadyExistsException(DeviceAlreadyExistsException ex) {
+    ErrorResponse errorResponse = new ErrorResponse(
+        false,
+        ex.getMessage(),
+        Collections.emptyMap());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+  }
+
+  @ExceptionHandler(DeviceNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleDeviceNotFoundException(DeviceNotFoundException ex) {
+    ErrorResponse errorResponse = new ErrorResponse(
+        false,
+        ex.getMessage(),
+        Collections.emptyMap());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();

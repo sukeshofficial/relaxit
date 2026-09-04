@@ -1,0 +1,15 @@
+{
+  "name": "relaxit-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RelaxIt Monorepo Root Launcher",
+  "scripts": {
+    "dev:backend": "cd backend && mvnw.cmd spring-boot:run \"-Dspring-boot.run.profiles=local\"",
+    "dev:frontend": "cd client && npm run dev",
+    "dev": "concurrently -k -n \"backend,frontend\" -c \"blue.bold,cyan.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
