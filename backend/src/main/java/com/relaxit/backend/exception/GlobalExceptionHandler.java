@@ -24,6 +24,15 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
   }
 
+  @ExceptionHandler(InvalidPasswordException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidPasswordException(InvalidPasswordException ex) {
+    ErrorResponse errorResponse = new ErrorResponse(
+        false,
+        ex.getMessage(),
+        Collections.emptyMap());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+  }
+
   @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
   public ResponseEntity<ErrorResponse> handleAuthenticationException(
       org.springframework.security.core.AuthenticationException ex) {

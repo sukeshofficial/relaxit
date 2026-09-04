@@ -1,6 +1,7 @@
 package com.relaxit.backend.security;
 
 import com.relaxit.backend.entity.User;
+import com.relaxit.backend.entity.UserStatus;
 import com.relaxit.backend.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,9 +26,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     User user = userRepository.findByEmail(normalizedEmail)
         .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
 
+    boolean enabled = (user.getStatus() == UserStatus.ACTIVE);
+
     return new org.springframework.security.core.userdetails.User(
         user.getEmail(),
         user.getPassword(),
+        enabled,
+        true,
+        true,
+        true,
         Collections.emptyList());
   }
 }

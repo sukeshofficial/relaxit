@@ -2,6 +2,8 @@ package com.relaxit.backend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,6 +37,13 @@ public class User {
   @Column(nullable = false)
   private String password;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ACTIVE'")
+  private UserStatus status = UserStatus.ACTIVE;
+
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
@@ -57,6 +66,7 @@ public class User {
     this.lastName = lastName;
     this.email = email;
     this.password = password;
+    this.status = UserStatus.ACTIVE;
   }
 
   // =========================
@@ -69,6 +79,9 @@ public class User {
 
     this.createdAt = now;
     this.updatedAt = now;
+    if (this.status == null) {
+      this.status = UserStatus.ACTIVE;
+    }
   }
 
   @PreUpdate
@@ -118,6 +131,22 @@ public class User {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public UserStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(UserStatus status) {
+    this.status = status;
+  }
+
+  public LocalDateTime getDeletedAt() {
+    return deletedAt;
+  }
+
+  public void setDeletedAt(LocalDateTime deletedAt) {
+    this.deletedAt = deletedAt;
   }
 
   public LocalDateTime getCreatedAt() {
