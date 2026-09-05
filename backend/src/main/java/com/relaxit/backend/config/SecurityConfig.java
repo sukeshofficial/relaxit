@@ -1,5 +1,6 @@
 package com.relaxit.backend.config;
 
+import com.relaxit.backend.security.DeviceAuthenticationFilter;
 import com.relaxit.backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +17,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthFilter;
+  private final DeviceAuthenticationFilter deviceAuthFilter;
 
-  public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+  public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, DeviceAuthenticationFilter deviceAuthFilter) {
     this.jwtAuthFilter = jwtAuthFilter;
+    this.deviceAuthFilter = deviceAuthFilter;
   }
 
   @Bean
@@ -42,6 +45,7 @@ public class SecurityConfig {
                 "/api/v1/auth/login")
             .permitAll()
             .anyRequest().authenticated())
+        .addFilterBefore(deviceAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

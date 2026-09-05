@@ -1,0 +1,11 @@
+package com.relaxit.backend.entity;
+
+public enum DeviceEventType {
+  DEVICE_CONNECTED,
+  DEVICE_DISCONNECTED,
+  BATTERY_LOW,
+  FIRMWARE_UPDATED,
+  SENSOR_ERROR,
+  PAIRING_STARTED,
+  PAIRING_COMPLETED
+}

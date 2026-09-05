@@ -41,6 +41,12 @@ public class Device {
   @Column(name = "firmware_version", length = 50)
   private String firmwareVersion;
 
+  @Column(name = "device_secret_hash", length = 255)
+  private String deviceSecretHash;
+
+  @Column(name = "provisioned_at")
+  private LocalDateTime provisionedAt;
+
   @Column(name = "last_seen_at")
   private LocalDateTime lastSeenAt;
 
@@ -129,6 +135,22 @@ public class Device {
 
   public void setFirmwareVersion(String firmwareVersion) {
     this.firmwareVersion = firmwareVersion;
+  }
+
+  public String getDeviceSecretHash() {
+    return deviceSecretHash;
+  }
+
+  public void setDeviceSecretHash(String deviceSecretHash) {
+    this.deviceSecretHash = deviceSecretHash;
+  }
+
+  public LocalDateTime getProvisionedAt() {
+    return provisionedAt;
+  }
+
+  public void setProvisionedAt(LocalDateTime provisionedAt) {
+    this.provisionedAt = provisionedAt;
   }
 
   public LocalDateTime getLastSeenAt() {

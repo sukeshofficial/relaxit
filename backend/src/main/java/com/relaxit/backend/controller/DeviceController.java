@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.relaxit.backend.dto.device.ProvisionDeviceResponse;
+
 @RestController
 @RequestMapping("/api/v1/devices")
 public class DeviceController {
@@ -36,6 +38,13 @@ public class DeviceController {
   private String getAuthenticatedUserEmail() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     return authentication.getName();
+  }
+
+  @PostMapping("/{id}/provision")
+  public ResponseEntity<ProvisionDeviceResponse> provisionDevice(@PathVariable UUID id) {
+    String email = getAuthenticatedUserEmail();
+    ProvisionDeviceResponse response = deviceService.provisionDevice(email, id);
+    return ResponseEntity.ok(response);
   }
 
   @PostMapping
