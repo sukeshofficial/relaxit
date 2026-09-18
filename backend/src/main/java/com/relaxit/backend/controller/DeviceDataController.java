@@ -22,6 +22,9 @@ import com.relaxit.backend.dto.device.DeviceStatisticsDTO;
 import com.relaxit.backend.entity.Alert;
 import java.time.LocalDate;
 
+import com.relaxit.backend.dto.device.DeviceEventResponse;
+import com.relaxit.backend.dto.device.SensorMeasurementResponse;
+
 @RestController
 @RequestMapping("/api/v1/devices/{deviceId}")
 public class DeviceDataController {
@@ -95,6 +98,27 @@ public class DeviceDataController {
     String email = getAuthenticatedUserEmail();
     Page<PostureResponse> response = deviceDataService.getPaginatedPostureHistory(email, deviceId, from, to, page,
         size);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/measurements")
+  public ResponseEntity<Page<SensorMeasurementResponse>> getSensorMeasurements(
+      @PathVariable UUID deviceId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "50") int size) {
+    String email = getAuthenticatedUserEmail();
+    Page<SensorMeasurementResponse> response = deviceDataService.getPaginatedSensorMeasurements(email, deviceId, page,
+        size);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/events")
+  public ResponseEntity<Page<DeviceEventResponse>> getDeviceEvents(
+      @PathVariable UUID deviceId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    String email = getAuthenticatedUserEmail();
+    Page<DeviceEventResponse> response = deviceDataService.getPaginatedDeviceEvents(email, deviceId, page, size);
     return ResponseEntity.ok(response);
   }
 }

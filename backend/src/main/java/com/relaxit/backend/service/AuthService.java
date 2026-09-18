@@ -4,14 +4,20 @@ import com.relaxit.backend.dto.auth.AuthUserResponse;
 import com.relaxit.backend.dto.auth.ForgotPasswordRequest;
 import com.relaxit.backend.dto.auth.LoginRequest;
 import com.relaxit.backend.dto.auth.LoginResponse;
+import com.relaxit.backend.dto.auth.LogoutRequest;
+import com.relaxit.backend.dto.auth.RefreshTokenRequest;
 import com.relaxit.backend.dto.auth.RegisterRequest;
 import com.relaxit.backend.dto.auth.RegisterResponse;
 import com.relaxit.backend.dto.auth.ResetPasswordRequest;
+import com.relaxit.backend.dto.auth.VerifyEmailRequest;
+import com.relaxit.backend.entity.EmailVerificationToken;
 import com.relaxit.backend.entity.PasswordResetToken;
+import com.relaxit.backend.entity.RefreshToken;
 import com.relaxit.backend.entity.User;
 import com.relaxit.backend.entity.UserStatus;
 import com.relaxit.backend.exception.EmailAlreadyExistsException;
 import com.relaxit.backend.exception.InvalidPasswordException;
+import com.relaxit.backend.repository.EmailVerificationTokenRepository;
 import com.relaxit.backend.repository.PasswordResetTokenRepository;
 import com.relaxit.backend.repository.UserRepository;
 import com.relaxit.backend.security.JwtService;
@@ -37,21 +43,27 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final PasswordResetTokenRepository tokenRepository;
+  private final EmailVerificationTokenRepository verificationTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final JwtService jwtService;
+  private final RefreshTokenService refreshTokenService;
 
   public AuthService(
       UserRepository userRepository,
       PasswordResetTokenRepository tokenRepository,
+      EmailVerificationTokenRepository verificationTokenRepository,
       PasswordEncoder passwordEncoder,
       AuthenticationManager authenticationManager,
-      JwtService jwtService) {
+      JwtService jwtService,
+      RefreshTokenService refreshTokenService) {
     this.userRepository = userRepository;
     this.tokenRepository = tokenRepository;
+    this.verificationTokenRepository = verificationTokenRepository;
     this.passwordEncoder = passwordEncoder;
     this.authenticationManager = authenticationManager;
     this.jwtService = jwtService;
+    this.refreshTokenService = refreshTokenService;
   }
 
   @Transactional
@@ -69,8 +81,18 @@ public class AuthService {
     user.setLastName(request.getLastName().trim());
     user.setEmail(email);
     user.setPassword(hashedPassword);
+    user.setEmailVerified(false);
 
     User savedUser = userRepository.save(user);
+
+    // Create Email Verification Token
+    String rawVerificationToken = UUID.randomUUID().toString();
+    String tokenHash = hashToken(rawVerificationToken);
+    EmailVerificationToken verificationToken = new EmailVerificationToken(
+        savedUser,
+        tokenHash,
+        LocalDateTime.now().plusDays(1));
+    verificationTokenRepository.save(verificationToken);
 
     return new RegisterResponse(
         savedUser.getId(),
@@ -79,6 +101,7 @@ public class AuthService {
         savedUser.getEmail());
   }
 
+  @Transactional
   public LoginResponse login(LoginRequest request) {
     String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
 
@@ -99,6 +122,7 @@ public class AuthService {
         user.getEmail());
 
     String accessToken = jwtService.generateToken(user.getId().toString(), user.getEmail());
+    String refreshToken = refreshTokenService.createRefreshToken(user);
     long expiresIn = jwtService.getExpirationInSeconds();
 
     return new LoginResponse(
@@ -106,7 +130,80 @@ public class AuthService {
         "Login successful",
         userResponse,
         accessToken,
+        refreshToken,
         expiresIn);
+  }
+
+  @Transactional
+  public LoginResponse refreshToken(RefreshTokenRequest request) {
+    RefreshToken oldToken = refreshTokenService.verifyAndRotateRefreshToken(request.getRefreshToken());
+    User user = oldToken.getUser();
+
+    if (user.getStatus() != UserStatus.ACTIVE) {
+      throw new InvalidPasswordException("Account is inactive or deleted");
+    }
+
+    AuthUserResponse userResponse = new AuthUserResponse(
+        user.getId(),
+        user.getFirstName(),
+        user.getLastName(),
+        user.getEmail());
+
+    String newAccessToken = jwtService.generateToken(user.getId().toString(), user.getEmail());
+    String newRefreshToken = refreshTokenService.createRefreshToken(user);
+    long expiresIn = jwtService.getExpirationInSeconds();
+
+    return new LoginResponse(
+        true,
+        "Token refreshed successfully",
+        userResponse,
+        newAccessToken,
+        newRefreshToken,
+        expiresIn);
+  }
+
+  @Transactional
+  public Map<String, Object> logout(LogoutRequest request, String currentUserEmail) {
+    if (request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank()) {
+      refreshTokenService.revokeRefreshToken(request.getRefreshToken());
+    } else if (currentUserEmail != null && !currentUserEmail.isBlank()) {
+      userRepository.findByEmail(currentUserEmail).ifPresent(refreshTokenService::revokeAllUserTokens);
+    }
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("success", true);
+    response.put("message", "Logged out successfully");
+    return response;
+  }
+
+  @Transactional
+  public Map<String, Object> verifyEmail(VerifyEmailRequest request) {
+    String rawToken = request.getToken().trim();
+    String tokenHash = hashToken(rawToken);
+
+    EmailVerificationToken verificationToken = verificationTokenRepository.findByTokenHash(tokenHash)
+        .orElseThrow(() -> new InvalidPasswordException("Invalid or expired email verification token"));
+
+    if (verificationToken.getUsedAt() != null) {
+      throw new InvalidPasswordException("Email verification token has already been used");
+    }
+
+    if (verificationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+      throw new InvalidPasswordException("Email verification token has expired");
+    }
+
+    User user = verificationToken.getUser();
+    user.setEmailVerified(true);
+    user.setEmailVerifiedAt(LocalDateTime.now());
+    userRepository.save(user);
+
+    verificationToken.setUsedAt(LocalDateTime.now());
+    verificationTokenRepository.save(verificationToken);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("success", true);
+    response.put("message", "Email verified successfully");
+    return response;
   }
 
   @Transactional
@@ -130,9 +227,6 @@ public class AuthService {
 
         PasswordResetToken resetToken = new PasswordResetToken(user, tokenHash, expiresAt);
         tokenRepository.save(resetToken);
-
-        // Include rawToken in response for development convenience
-        response.put("devResetToken", rawToken);
       }
     }
 

@@ -28,6 +28,13 @@ import com.relaxit.backend.entity.PostureType;
 
 import java.time.LocalDate;
 
+import com.relaxit.backend.dto.device.DeviceEventResponse;
+import com.relaxit.backend.dto.device.SensorMeasurementResponse;
+import com.relaxit.backend.entity.DeviceEvent;
+import com.relaxit.backend.entity.SensorMeasurement;
+import com.relaxit.backend.repository.DeviceEventRepository;
+import com.relaxit.backend.repository.SensorMeasurementRepository;
+
 @Service
 @Transactional(readOnly = true)
 public class DeviceDataService {
@@ -35,6 +42,8 @@ public class DeviceDataService {
   private final DeviceRepository deviceRepository;
   private final DeviceSessionRepository sessionRepository;
   private final PostureMeasurementRepository postureRepository;
+  private final SensorMeasurementRepository measurementRepository;
+  private final DeviceEventRepository eventRepository;
   private final AlertService alertService;
   private final UserService userService;
 
@@ -42,11 +51,15 @@ public class DeviceDataService {
       DeviceRepository deviceRepository,
       DeviceSessionRepository sessionRepository,
       PostureMeasurementRepository postureRepository,
+      SensorMeasurementRepository measurementRepository,
+      DeviceEventRepository eventRepository,
       AlertService alertService,
       UserService userService) {
     this.deviceRepository = deviceRepository;
     this.sessionRepository = sessionRepository;
     this.postureRepository = postureRepository;
+    this.measurementRepository = measurementRepository;
+    this.eventRepository = eventRepository;
     this.alertService = alertService;
     this.userService = userService;
   }
@@ -142,5 +155,20 @@ public class DeviceDataService {
         .findByDeviceIdAndTimestampBetween(device.getId(), start, end, pageable);
 
     return pageResult.map(PostureResponse::fromEntity);
+  }
+
+  public Page<SensorMeasurementResponse> getPaginatedSensorMeasurements(String userEmail, UUID deviceId, int page,
+      int size) {
+    Device device = verifyDeviceOwnership(userEmail, deviceId);
+    Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+    Page<SensorMeasurement> pageResult = measurementRepository.findByDeviceId(device.getId(), pageable);
+    return pageResult.map(SensorMeasurementResponse::fromEntity);
+  }
+
+  public Page<DeviceEventResponse> getPaginatedDeviceEvents(String userEmail, UUID deviceId, int page, int size) {
+    Device device = verifyDeviceOwnership(userEmail, deviceId);
+    Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+    Page<DeviceEvent> pageResult = eventRepository.findByDeviceId(device.getId(), pageable);
+    return pageResult.map(DeviceEventResponse::fromEntity);
   }
 }

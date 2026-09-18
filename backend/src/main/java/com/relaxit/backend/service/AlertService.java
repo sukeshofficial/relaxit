@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -34,5 +35,22 @@ public class AlertService {
   public Page<Alert> getDeviceAlerts(UUID deviceId, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     return alertRepository.findByDeviceIdOrderByCreatedAtDesc(deviceId, pageable);
+  }
+
+  @Transactional
+  public Alert acknowledgeAlert(String userEmail, UUID alertId) {
+    Alert alert = alertRepository.findById(alertId)
+        .orElseThrow(() -> new IllegalArgumentException("Alert not found with id: " + alertId));
+
+    if (alert.getUser() == null || !alert.getUser().getEmail().equalsIgnoreCase(userEmail)) {
+      throw new IllegalArgumentException("Alert not found with id: " + alertId);
+    }
+
+    if (alert.getAcknowledgedAt() == null) {
+      alert.setAcknowledgedAt(LocalDateTime.now());
+      alert = alertRepository.save(alert);
+    }
+
+    return alert;
   }
 }

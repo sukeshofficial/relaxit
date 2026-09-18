@@ -9,10 +9,11 @@ public class LoginResponse {
   public LoginResponse() {
   }
 
-  public LoginResponse(boolean success, String message, AuthUserResponse user, String accessToken, Long expiresIn) {
+  public LoginResponse(boolean success, String message, AuthUserResponse user, String accessToken, String refreshToken,
+      Long expiresIn) {
     this.success = success;
     this.message = message;
-    this.data = new LoginData(user, accessToken, expiresIn);
+    this.data = new LoginData(user, accessToken, refreshToken, expiresIn);
   }
 
   public boolean isSuccess() {
@@ -42,14 +43,16 @@ public class LoginResponse {
   public static class LoginData {
     private AuthUserResponse user;
     private String accessToken;
+    private String refreshToken;
     private Long expiresIn;
 
     public LoginData() {
     }
 
-    public LoginData(AuthUserResponse user, String accessToken, Long expiresIn) {
+    public LoginData(AuthUserResponse user, String accessToken, String refreshToken, Long expiresIn) {
       this.user = user;
       this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
       this.expiresIn = expiresIn;
     }
 
@@ -67,6 +70,14 @@ public class LoginResponse {
 
     public void setAccessToken(String accessToken) {
       this.accessToken = accessToken;
+    }
+
+    public String getRefreshToken() {
+      return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+      this.refreshToken = refreshToken;
     }
 
     public Long getExpiresIn() {

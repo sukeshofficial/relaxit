@@ -10,6 +10,11 @@ import com.relaxit.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.relaxit.backend.dto.auth.LogoutRequest;
+import com.relaxit.backend.dto.auth.RefreshTokenRequest;
+import com.relaxit.backend.dto.auth.VerifyEmailRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +46,29 @@ public class AuthController {
   public ResponseEntity<LoginResponse> login(
       @Valid @RequestBody LoginRequest request) {
     LoginResponse response = authService.login(request);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/refresh-token")
+  public ResponseEntity<LoginResponse> refreshToken(
+      @Valid @RequestBody RefreshTokenRequest request) {
+    LoginResponse response = authService.refreshToken(request);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Map<String, Object>> logout(
+      @RequestBody(required = false) LogoutRequest request,
+      @AuthenticationPrincipal UserDetails userDetails) {
+    String email = userDetails != null ? userDetails.getUsername() : null;
+    Map<String, Object> response = authService.logout(request, email);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/verify-email")
+  public ResponseEntity<Map<String, Object>> verifyEmail(
+      @Valid @RequestBody VerifyEmailRequest request) {
+    Map<String, Object> response = authService.verifyEmail(request);
     return ResponseEntity.ok(response);
   }
 

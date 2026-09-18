@@ -41,6 +41,12 @@ public class User {
   @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ACTIVE'")
   private UserStatus status = UserStatus.ACTIVE;
 
+  @Column(name = "email_verified", nullable = false)
+  private boolean emailVerified = false;
+
+  @Column(name = "email_verified_at")
+  private LocalDateTime emailVerifiedAt;
+
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
@@ -139,6 +145,22 @@ public class User {
 
   public void setStatus(UserStatus status) {
     this.status = status;
+  }
+
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+
+  public void setEmailVerified(boolean emailVerified) {
+    this.emailVerified = emailVerified;
+  }
+
+  public LocalDateTime getEmailVerifiedAt() {
+    return emailVerifiedAt;
+  }
+
+  public void setEmailVerifiedAt(LocalDateTime emailVerifiedAt) {
+    this.emailVerifiedAt = emailVerifiedAt;
   }
 
   public LocalDateTime getDeletedAt() {

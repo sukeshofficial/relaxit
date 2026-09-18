@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 
+import org.springframework.context.annotation.Lazy;
+
 @Component
 public class DeviceAuthenticationFilter extends OncePerRequestFilter {
 
@@ -26,7 +28,7 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
   private final DeviceRepository deviceRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public DeviceAuthenticationFilter(DeviceRepository deviceRepository, PasswordEncoder passwordEncoder) {
+  public DeviceAuthenticationFilter(DeviceRepository deviceRepository, @Lazy PasswordEncoder passwordEncoder) {
     this.deviceRepository = deviceRepository;
     this.passwordEncoder = passwordEncoder;
   }
@@ -43,13 +45,13 @@ public class DeviceAuthenticationFilter extends OncePerRequestFilter {
 
       if (deviceOpt.isPresent()) {
         Device device = deviceOpt.get();
-        if (device.getDeviceSecretHash() != null && passwordEncoder.matches(deviceSecret, device.getDeviceSecretHash())) {
+        if (device.getDeviceSecretHash() != null
+            && passwordEncoder.matches(deviceSecret, device.getDeviceSecretHash())) {
           DevicePrincipal principal = new DevicePrincipal(device);
           UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
               principal,
               null,
-              Collections.singletonList(new SimpleGrantedAuthority("ROLE_DEVICE"))
-          );
+              Collections.singletonList(new SimpleGrantedAuthority("ROLE_DEVICE")));
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
       }

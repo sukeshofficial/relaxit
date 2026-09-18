@@ -22,6 +22,7 @@ Thumbs.db
 
 # Dependencies
 node_modules/
+artifacts/
 
 # Sensitive environment / configuration files
 .env
