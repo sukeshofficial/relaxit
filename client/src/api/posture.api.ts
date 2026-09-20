@@ -1,23 +1,29 @@
 import { apiClient } from './client';
-import type { ApiResponse, PageResponse, PostureResponse } from '../types/api';
+import type { PageResponse, PostureResponse } from '../types/api';
 
 export const postureApi = {
-  async getLatestPosture(deviceId: number): Promise<ApiResponse<PostureResponse>> {
-    const res = await apiClient.get<ApiResponse<PostureResponse>>(
-      `/devices/${deviceId}/posture/latest`
+  async getPostureHistoryList(
+    deviceId: string,
+    from?: string,
+    to?: string
+  ): Promise<PostureResponse[]> {
+    const res = await apiClient.get<PostureResponse[]>(
+      `/devices/${deviceId}/posture`,
+      { params: { from, to } }
     );
-    return res.data;
+    return Array.isArray(res.data) ? res.data : [];
   },
 
-  async getPostureHistory(
-    deviceId: number,
+  async getPostureHistoryPage(
+    deviceId: string,
     page = 0,
     size = 20,
-    sort = 'timestamp,desc'
-  ): Promise<ApiResponse<PageResponse<PostureResponse>>> {
-    const res = await apiClient.get<ApiResponse<PageResponse<PostureResponse>>>(
+    from?: string,
+    to?: string
+  ): Promise<PageResponse<PostureResponse>> {
+    const res = await apiClient.get<PageResponse<PostureResponse>>(
       `/devices/${deviceId}/posture/page`,
-      { params: { page, size, sort } }
+      { params: { page, size, from, to } }
     );
     return res.data;
   },

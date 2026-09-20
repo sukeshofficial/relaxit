@@ -67,7 +67,8 @@ public class SecurityConfig {
                 "/api/v1/auth/verify-email",
                 "/api/v1/auth/forgot-password",
                 "/api/v1/auth/reset-password",
-                "/api/v1/auth/logout")
+                "/api/v1/auth/logout",
+                "/api/v1/dev/simulation/**")
             .permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(deviceAuthFilter, UsernamePasswordAuthenticationFilter.class)

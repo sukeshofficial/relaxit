@@ -1,12 +1,14 @@
 import { apiClient } from './client';
-import type { ApiResponse, DeviceStatisticsResponse } from '../types/api';
+import type { DeviceStatisticsResponse } from '../types/api';
 
 export const statisticsApi = {
   async getDeviceStatistics(
-    deviceId: number
-  ): Promise<ApiResponse<DeviceStatisticsResponse>> {
-    const res = await apiClient.get<ApiResponse<DeviceStatisticsResponse>>(
-      `/devices/${deviceId}/statistics`
+    deviceId: string,
+    date?: string
+  ): Promise<DeviceStatisticsResponse> {
+    const res = await apiClient.get<DeviceStatisticsResponse>(
+      `/devices/${deviceId}/statistics`,
+      { params: date ? { date } : {} }
     );
     return res.data;
   },

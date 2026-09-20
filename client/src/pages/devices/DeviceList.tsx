@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth.api';
 
 import { deviceApi } from '../../api/device.api';
@@ -7,26 +6,26 @@ import type { DeviceResponse } from '../../types/api';
 
 import axios from 'axios';
 
-import logoAsset from '../../assets/wordmark.svg';
 import DeviceCard from '../../components/devices/DeviceCard';
 import AddDeviceDialog from '../../components/devices/AddDeviceDialog';
 import '../../styles/devices.css';
 
+import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
+import { useAuth } from '../../hooks/useAuth';
+
 export default function DeviceList() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [devices, setDevices] = useState<DeviceResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const fetchDevices = useCallback(async () => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await deviceApi.getDevices();
-      const list = res.data ?? (Array.isArray(res) ? res : []);
+      const list = await deviceApi.getDevices();
       if (Array.isArray(list)) {
         setDevices(list);
       } else {
@@ -54,13 +53,10 @@ export default function DeviceList() {
   }, [fetchDevices]);
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
     try {
       await authApi.logout();
     } catch (err) {
       console.error('Logout failed:', err);
-    } finally {
-      setIsLoggingOut(false);
     }
   };
 
@@ -70,37 +66,13 @@ export default function DeviceList() {
   };
 
   return (
-    <div className="devices-page">
-      <div className="devices-container">
-        {/* App Header */}
-        <header className="devices-header">
-          <div className="devices-header-left">
-            <img
-              src={logoAsset}
-              alt="Relaxit"
-              className="devices-header-logo"
-              onClick={() => navigate('/devices')}
-            />
-            <nav className="devices-nav">
-              <span className="devices-nav-link active">My Devices</span>
-              <span
-                className="devices-nav-link"
-                style={{ cursor: 'pointer' }}
-                onClick={() => navigate('/dashboard')}
-              >
-                Dashboard
-              </span>
-            </nav>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="btn-signout"
-          >
-            {isLoggingOut ? 'Signing out...' : 'Sign Out'}
-          </button>
-        </header>
+    <div className="devices-page" style={{ padding: 0 }}>
+      <DashboardHeader
+        userFirstName={user?.fullName || user?.email}
+        onLogout={handleLogout}
+        activeNav="devices"
+      />
+      <div className="devices-container" style={{ padding: '24px', boxSizing: 'border-box' }}>
 
         {/* Toolbar */}
         <div className="devices-toolbar">

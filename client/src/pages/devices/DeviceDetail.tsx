@@ -4,12 +4,14 @@ import { deviceApi } from '../../api/device.api';
 import type { DeviceResponse, DeviceStatusResponse } from '../../types/api';
 import axios from 'axios';
 
-import logoAsset from '../../assets/wordmark.svg';
+import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
+import { useAuth } from '../../hooks/useAuth';
+import { authApi } from '../../api/auth.api';
 import DeviceStatusBadge from '../../components/devices/DeviceStatusBadge';
 import RenameDeviceDialog from '../../components/devices/RenameDeviceDialog';
 import ProvisionDeviceDialog from '../../components/devices/ProvisionDeviceDialog';
 import UnpairDeviceDialog from '../../components/devices/UnpairDeviceDialog';
-import '../../styles/devices.css';
+import { simulationService } from '../../services/simulation.service';
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'N/A';
@@ -23,6 +25,17 @@ function formatDate(dateStr: string | null): string {
 export default function DeviceDetail() {
   const { deviceId } = useParams<{ deviceId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // ignore
+    } finally {
+      navigate('/login');
+    }
+  };
 
   const [device, setDevice] = useState<DeviceResponse | null>(null);
   const [statusInfo, setStatusInfo] = useState<DeviceStatusResponse | null>(null);
@@ -32,6 +45,70 @@ export default function DeviceDetail() {
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isProvisionOpen, setIsProvisionOpen] = useState(false);
   const [isUnpairOpen, setIsUnpairOpen] = useState(false);
+
+  // Virtual Device Simulator State
+  const [simStatus, setSimStatus] = useState<any>({ running: false });
+  const [simSecretInput, setSimSecretInput] = useState('');
+  const [isStartingSim, setIsStartingSim] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState('NORMAL_SITTING');
+  const [selectedSpeed, setSelectedSpeed] = useState(1);
+
+  const refreshSimStatus = useCallback(async () => {
+    const status = await simulationService.getStatus();
+    setSimStatus(status);
+    if (status.scenario) setSelectedScenario(status.scenario);
+    if (status.speedMultiplier) setSelectedSpeed(status.speedMultiplier);
+  }, []);
+
+  useEffect(() => {
+    refreshSimStatus();
+    const interval = setInterval(refreshSimStatus, 2000);
+    return () => clearInterval(interval);
+  }, [refreshSimStatus]);
+
+  const handleRunDevice = async () => {
+    if (!device?.id) return;
+    setIsStartingSim(true);
+    try {
+      if (simSecretInput.trim()) {
+        await simulationService.startDevice(device.id, simSecretInput);
+      } else {
+        await simulationService.autoStartDevice(device.id);
+      }
+      await refreshSimStatus();
+      await fetchDeviceData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to start device runner.');
+    } finally {
+      setIsStartingSim(false);
+    }
+  };
+
+  const handleStopDevice = async () => {
+    try {
+      await simulationService.stopDevice();
+      await refreshSimStatus();
+      await fetchDeviceData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleScenarioChange = async (newScenario: string) => {
+    setSelectedScenario(newScenario);
+    if (simStatus.running) {
+      await simulationService.setScenario(newScenario);
+      await refreshSimStatus();
+    }
+  };
+
+  const handleSpeedChange = async (newSpeed: number) => {
+    setSelectedSpeed(newSpeed);
+    if (simStatus.running) {
+      await simulationService.setSpeed(newSpeed);
+      await refreshSimStatus();
+    }
+  };
 
   const fetchDeviceData = useCallback(async () => {
     if (!deviceId) return;
@@ -93,29 +170,13 @@ export default function DeviceDetail() {
   };
 
   return (
-    <div className="devices-page">
-      <div className="devices-container">
-        {/* App Header */}
-        <header className="devices-header">
-          <div className="devices-header-left">
-            <img
-              src={logoAsset}
-              alt="Relaxit"
-              className="devices-header-logo"
-              onClick={() => navigate('/devices')}
-            />
-            <nav className="devices-nav">
-              <span
-                className="devices-nav-link"
-                style={{ cursor: 'pointer' }}
-                onClick={() => navigate('/devices')}
-              >
-                My Devices
-              </span>
-              <span className="devices-nav-link active">Device Details</span>
-            </nav>
-          </div>
-        </header>
+    <div className="devices-page" style={{ padding: 0 }}>
+      <DashboardHeader
+        userFirstName={user?.fullName || user?.email}
+        onLogout={handleLogout}
+        activeNav="devices"
+      />
+      <div className="devices-container" style={{ padding: '24px', boxSizing: 'border-box' }}>
 
         {/* Breadcrumb */}
         <div className="breadcrumb">
@@ -203,6 +264,99 @@ export default function DeviceDetail() {
                     <span className="detail-item-value">{formatDate(device.updatedAt)}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Virtual Device Simulator Card */}
+            <div className="detail-card" style={{ marginBottom: '24px', borderLeft: simStatus.running ? '4px solid #10b981' : '4px solid #6b7280' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 className="detail-card-title" style={{ margin: 0 }}>Virtual Device Runner</h3>
+                <span className={`status-badge ${simStatus.running ? 'status-online' : 'status-offline'}`}>
+                  ● {simStatus.running ? 'RUNNING' : 'STOPPED'}
+                </span>
+              </div>
+
+              <div className="detail-list" style={{ marginTop: '16px' }}>
+                {!simStatus.running ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>
+                      Run a virtual Relaxit device to generate realistic sensor telemetry and process sessions/posture in real-time.
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <input
+                        type="password"
+                        placeholder="Device Secret (Optional - Auto-filled if blank)"
+                        className="form-input"
+                        style={{ maxWidth: '340px' }}
+                        value={simSecretInput}
+                        onChange={(e) => setSimSecretInput(e.target.value)}
+                      />
+                      <button
+                        className="btn-primary"
+                        onClick={handleRunDevice}
+                        disabled={isStartingSim}
+                      >
+                        {isStartingSim ? 'Starting...' : 'Run Device'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                      <div>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Scenario</span>
+                        <select
+                          className="form-input"
+                          value={selectedScenario}
+                          onChange={(e) => handleScenarioChange(e.target.value)}
+                          style={{ marginTop: '4px', padding: '6px 12px' }}
+                        >
+                          <option value="NORMAL_SITTING">Normal Sitting</option>
+                          <option value="LEAN_LEFT">Lean Left</option>
+                          <option value="LEAN_RIGHT">Lean Right</option>
+                          <option value="FORWARD_LEAN">Forward Lean</option>
+                          <option value="SLOUCHING">Slouching</option>
+                          <option value="FREQUENT_MOVEMENT">Frequent Movement</option>
+                          <option value="PROLONGED_POOR_POSTURE">Prolonged Poor Posture</option>
+                          <option value="USER_LEAVES">User Leaves</option>
+                          <option value="LOW_BATTERY">Low Battery</option>
+                          <option value="LONG_RUN">Long Run Scenario</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Time Speed</span>
+                        <select
+                          className="form-input"
+                          value={selectedSpeed}
+                          onChange={(e) => handleSpeedChange(Number(e.target.value))}
+                          style={{ marginTop: '4px', padding: '6px 12px' }}
+                        >
+                          <option value={1}>1x (Real-time)</option>
+                          <option value={2}>2x</option>
+                          <option value={10}>10x</option>
+                          <option value={60}>60x</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Battery</span>
+                        <span style={{ fontWeight: 600, marginTop: '8px', display: 'block' }}>{simStatus.batteryLevel}%</span>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Temperature</span>
+                        <span style={{ fontWeight: 600, marginTop: '8px', display: 'block' }}>{simStatus.temperature} °C</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <button className="btn-danger" onClick={handleStopDevice}>
+                        Stop Device
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

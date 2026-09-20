@@ -1,58 +1,61 @@
 export interface SessionResponse {
-  id: number;
-  deviceId: number;
-  startTime: string;
-  endTime: string | null;
-  activeDurationSeconds: number;
-  goodPostureSeconds: number;
-  badPostureSeconds: number;
-  averagePostureScore: number;
+  id: string;
+  deviceId: string;
+  startedAt: string;
+  endedAt: string | null;
+  durationSeconds: number;
   status: 'ACTIVE' | 'COMPLETED' | 'TERMINATED';
 }
 
+export type PostureType =
+  | 'GOOD'
+  | 'SLOUCHING'
+  | 'LEAN_LEFT'
+  | 'LEAN_RIGHT'
+  | 'FORWARD_LEAN'
+  | 'PROLONGED_POOR_POSTURE';
+
 export interface PostureResponse {
-  id: number;
-  sessionId: number;
-  postureStatus: 'GOOD' | 'SLOUCHING' | 'LEANING_LEFT' | 'LEANING_RIGHT' | 'UNKNOWN';
-  postureScore: number;
-  pressureDistribution: Record<string, number> | null;
+  id: string;
+  deviceId: string;
+  sessionId: string;
   timestamp: string;
+  postureType: PostureType;
+  score: number;
 }
 
 export interface SensorMeasurementResponse {
-  id: number;
-  sessionId: number;
-  sensorIndex: number;
-  rawValue: number;
-  normalizedValue: number;
+  id: string;
+  deviceId: string;
+  sessionId: string;
   timestamp: string;
+  sensorType: string;
+  value: number;
+  unit: string;
 }
 
 export interface DeviceEventResponse {
-  id: number;
-  deviceId: number;
+  id: string;
+  deviceId: string;
   eventType: string;
-  eventSeverity: 'INFO' | 'WARNING' | 'CRITICAL';
-  details: Record<string, unknown> | null;
   timestamp: string;
+  details: string;
 }
 
 export interface AlertResponse {
-  id: number;
-  deviceId: number;
-  alertType: string;
+  id: string;
+  type: string;
   message: string;
-  acknowledged: boolean;
-  acknowledgedAt: string | null;
   createdAt: string;
+  acknowledgedAt: string | null;
 }
 
 export interface DeviceStatisticsResponse {
-  deviceId: number;
-  totalSessions: number;
-  totalActiveTimeSeconds: number;
-  totalGoodPostureSeconds: number;
-  totalBadPostureSeconds: number;
-  overallAverageScore: number;
-  lastSessionAt: string | null;
+  date: string;
+  totalSittingMinutes: number;
+  averagePostureScore: number;
+  goodPostureMinutes: number;
+  poorPostureMinutes: number;
+  totalSessionsCount: number;
 }
+

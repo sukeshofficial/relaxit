@@ -19,22 +19,12 @@ export const deviceApi = {
     };
   },
 
-  async getDevices(): Promise<ApiResponse<DeviceResponse[]>> {
+  async getDevices(): Promise<DeviceResponse[]> {
     const res = await apiClient.get<DeviceResponse[]>('/devices');
-    let deviceList: DeviceResponse[] = [];
-    if (Array.isArray(res.data)) {
-      deviceList = res.data;
-    } else if (res.data && typeof res.data === 'object' && 'data' in res.data && Array.isArray((res.data as unknown as ApiResponse<DeviceResponse[]>).data)) {
-      deviceList = (res.data as unknown as ApiResponse<DeviceResponse[]>).data;
-    } else if (Array.isArray(res)) {
-      deviceList = res as unknown as DeviceResponse[];
-    }
-
-    return {
-      success: true,
-      message: 'Devices retrieved successfully',
-      data: deviceList,
-    };
+    const raw = res.data;
+    if (Array.isArray(raw)) return raw;
+    const inner = (raw as unknown as { data?: DeviceResponse[] })?.data;
+    return Array.isArray(inner) ? inner : [];
   },
 
 
