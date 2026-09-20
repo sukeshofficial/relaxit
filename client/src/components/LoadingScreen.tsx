@@ -9,7 +9,7 @@ export default function LoadingScreen({
   logoUrl,
   progress = 100,
 }: LoadingScreenProps) {
-  const value = Math.max(0, Math.min(progress, 100));
+  const clampedProgress = Math.max(0, Math.min(progress, 100));
 
   return (
     <main className="loading-screen">
@@ -21,7 +21,7 @@ export default function LoadingScreen({
         />
 
         <div className="loading-line">
-          <div className="loading-line-inner"></div>
+          <div className="loading-line-inner" style={{ width: `${clampedProgress}%` }}></div>
         </div>
 
 

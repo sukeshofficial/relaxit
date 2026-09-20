@@ -1,4 +1,4 @@
-package com.relaxit.backend.entity;
+  package com.relaxit.backend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

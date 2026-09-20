@@ -1,7 +1,8 @@
 import { useState, useEffect, type ReactNode } from "react";
 
 import LoadingScreen from "./LoadingScreen";
-import logoAsset from "../assets/wordmark.svg"
+import logoAsset from "../assets/wordmark.svg";
+import { hydrateAuthSession } from "../store/hydrateAuth";
 
 interface AppInitializerProps {
   children: ReactNode;
@@ -11,24 +12,22 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const loadAccountData = async () => {
+    const initApp = async () => {
       try {
-        // Centralized bootup API requests go here
-        await new Promise((resolve) => setTimeout(resolve, 2500));
-        // await new Promise(() => {});
+        await hydrateAuthSession();
       } catch (error) {
-        console.error("Failed to load account data during startup:", error);
+        console.error("Startup initialization error:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadAccountData();
+    initApp();
   }, []);
 
   if (isLoading) {
     return <LoadingScreen logoUrl={logoAsset} />;
   }
 
-  return <>{ children }</>
+  return <>{children}</>;
 }

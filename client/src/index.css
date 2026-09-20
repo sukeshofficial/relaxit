@@ -1,11 +1,6 @@
 #root {
-  outline: 1px solid red;
-
-  width: 320px;
-  height: auto;
+  width: 100%;
   min-height: 100vh;
-
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  margin: 0;
+  padding: 0;
 }
