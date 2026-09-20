@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { deviceApi } from '../../api/device.api';
 import type { DeviceResponse } from '../../types/api';
+import { Icon } from '../ui/Icon';
 import axios from 'axios';
 
 interface RenameDeviceDialogProps {
@@ -44,7 +45,6 @@ export default function RenameDeviceDialog({
         setErrorMsg(res?.message || 'Failed to rename device.');
       }
     } catch (err: unknown) {
-
       if (axios.isAxiosError(err) && err.response) {
         setErrorMsg(err.response.data?.message || 'Failed to update device name.');
       } else {
@@ -59,15 +59,23 @@ export default function RenameDeviceDialog({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Rename Device</h2>
+          <div className="modal-title-group">
+            <Icon name="edit" size={20} style={{ color: 'var(--color-primary)' }} />
+            <h2 className="modal-title">Rename Device</h2>
+          </div>
           <button className="modal-close" onClick={onClose} aria-label="Close dialog">
-            &times;
+            <Icon name="x" size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
-            {errorMsg && <div className="alert-box alert-error">{errorMsg}</div>}
+            {errorMsg && (
+              <div className="alert-box alert-error" style={{ marginBottom: '16px' }}>
+                <Icon name="error" size={16} />
+                <span>{errorMsg}</span>
+              </div>
+            )}
 
             <div className="form-group">
               <label className="form-label" htmlFor="editDeviceName">

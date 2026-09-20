@@ -1,23 +1,75 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Color Palette - Light-First Wellness Hardware */
+  --color-bg: #F7FAF8;
+  --color-surface-primary: #FFFFFF;
+  --color-surface-secondary: #F2F6F3;
+  --color-surface-hover: #E9EFEA;
+  --color-border: #DCE5DF;
+  --color-border-subtle: #E8EFEA;
+
+  /* Typography Colors */
+  --color-text-primary: #17201B;
+  --color-text-secondary: #68756D;
+  --color-text-muted: #8A968F;
+
+  /* Accent Colors */
+  --color-primary: #16A34A;
+  --color-primary-dark: #15803D;
+  --color-primary-soft: #EAF7EE;
+  --color-primary-border: #BBF7D0;
+
+  /* Status Colors */
+  --color-warning: #D97706;
+  --color-warning-soft: #FFF7E6;
+  --color-warning-border: #FDE68A;
+
+  --color-error: #DC2626;
+  --color-error-soft: #FFF1F1;
+  --color-error-border: #FCA5A5;
+
+  --color-info: #2563EB;
+  --color-info-soft: #EFF6FF;
+  --color-info-border: #BFDBFE;
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(23, 32, 27, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(23, 32, 27, 0.06), 0 2px 4px -1px rgba(23, 32, 27, 0.03);
+  --shadow-lg: 0 12px 28px -6px rgba(23, 32, 27, 0.08), 0 4px 10px -2px rgba(23, 32, 27, 0.04);
+  --shadow-modal: 0 20px 48px -12px rgba(23, 32, 27, 0.16);
+
+  /* Border Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
 
 body {
   margin: 0;
   padding: 0;
-  font-family: "Geist", sans-serif;
-  font-weight: 200;
-  font-style: normal;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.5;
 }
 
-.header {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 200px;
-  height: 103px;
+/* Global scrollbar refinement */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.wordmark {
-  width: 200px;
-  height: 103px;
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
 }

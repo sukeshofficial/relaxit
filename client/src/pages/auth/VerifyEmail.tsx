@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import { authApi } from '../../api/auth.api';
+import { Icon } from '../../components/ui/Icon';
 import type { AxiosError } from 'axios';
 import type { ApiErrorResponse } from '../../types/api';
 
@@ -25,7 +26,7 @@ export default function VerifyEmail() {
       const res = await authApi.verifyEmail({ token: tokenToVerify.trim() });
       if (res.success) {
         setStatus('success');
-        setMessage(res.message || 'Email verified successfully! You can now sign in.');
+        setMessage(res.message || 'Email verified successfully! You can now sign in to your Relaxit account.');
       } else {
         setStatus('error');
         setMessage(res.message || 'Email verification failed.');
@@ -52,28 +53,31 @@ export default function VerifyEmail() {
   };
 
   return (
-    <AuthLayout title="Email Verification" subtitle="Verify your Relaxit account">
+    <AuthLayout title="Verify Email" subtitle="Complete account verification to access Relaxit">
       {status === 'success' && (
         <div className="alert-box alert-success" style={{ marginBottom: '20px' }}>
-          {message}
+          <Icon name="check-circle" size={18} />
+          <span>{message}</span>
         </div>
       )}
 
       {status === 'error' && (
         <div className="alert-box alert-error" style={{ marginBottom: '20px' }}>
-          {message}
+          <Icon name="error" size={18} />
+          <span>{message}</span>
         </div>
       )}
 
       {message && status === 'idle' && (
         <div className="alert-box alert-success" style={{ marginBottom: '20px' }}>
-          {message}
+          <Icon name="check-circle" size={18} />
+          <span>{message}</span>
         </div>
       )}
 
       {status === 'success' ? (
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <Link to="/login" className="auth-button" style={{ display: 'inline-block', textDecoration: 'none' }}>
+          <Link to="/login" className="auth-button" style={{ display: 'inline-flex', textDecoration: 'none' }}>
             Proceed to Sign In
           </Link>
         </div>
@@ -83,15 +87,20 @@ export default function VerifyEmail() {
             <label htmlFor="token" className="form-label">
               Verification Token
             </label>
-            <input
-              id="token"
-              type="text"
-              className="form-input"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              disabled={status === 'loading'}
-              placeholder="Paste verification token"
-            />
+            <div className="input-with-icon">
+              <span className="input-icon-left">
+                <Icon name="key" size={16} />
+              </span>
+              <input
+                id="token"
+                type="text"
+                className="form-input has-icon-left"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                disabled={status === 'loading'}
+                placeholder="Paste verification token"
+              />
+            </div>
           </div>
 
           <button type="submit" className="auth-button" disabled={status === 'loading' || !token.trim()}>

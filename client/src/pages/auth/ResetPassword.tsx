@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import { authApi } from '../../api/auth.api';
+import { Icon } from '../../components/ui/Icon';
 import type { AxiosError } from 'axios';
 import type { ApiErrorResponse } from '../../types/api';
 
@@ -12,6 +13,7 @@ export default function ResetPassword() {
   const [token, setToken] = useState(tokenParam);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -69,34 +71,45 @@ export default function ResetPassword() {
   };
 
   return (
-    <AuthLayout title="Reset Password" subtitle="Enter your new password">
+    <AuthLayout title="Reset Password" subtitle="Choose a strong new password for your account">
       {isSuccess ? (
         <div style={{ textAlign: 'center' }}>
           <div className="alert-box alert-success" style={{ marginBottom: '20px' }}>
-            Password reset successfully! You can now sign in with your new password.
+            <Icon name="check-circle" size={18} />
+            <span>Password reset successfully! You can now sign in with your new password.</span>
           </div>
-          <Link to="/login" className="auth-button" style={{ display: 'inline-block', textDecoration: 'none' }}>
+          <Link to="/login" className="auth-button" style={{ display: 'inline-flex', textDecoration: 'none' }}>
             Proceed to Sign In
           </Link>
         </div>
       ) : (
         <>
-          {serverError && <div className="alert-box alert-error">{serverError}</div>}
+          {serverError && (
+            <div className="alert-box alert-error">
+              <Icon name="error" size={18} />
+              <span>{serverError}</span>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
             {!tokenParam && (
               <div className="form-group">
                 <label htmlFor="token" className="form-label">
                   Reset Token
                 </label>
-                <input
-                  id="token"
-                  type="text"
-                  className={`form-input ${fieldErrors.token ? 'has-error' : ''}`}
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  disabled={isSubmitting}
-                  placeholder="Paste reset token"
-                />
+                <div className="input-with-icon">
+                  <span className="input-icon-left">
+                    <Icon name="key" size={16} />
+                  </span>
+                  <input
+                    id="token"
+                    type="text"
+                    className={`form-input has-icon-left ${fieldErrors.token ? 'has-error' : ''}`}
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Paste reset token"
+                  />
+                </div>
                 {fieldErrors.token && <span className="field-error">{fieldErrors.token}</span>}
               </div>
             )}
@@ -105,15 +118,29 @@ export default function ResetPassword() {
               <label htmlFor="newPassword" className="form-label">
                 New Password
               </label>
-              <input
-                id="newPassword"
-                type="password"
-                className={`form-input ${fieldErrors.newPassword ? 'has-error' : ''}`}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={isSubmitting}
-                placeholder="At least 8 characters"
-              />
+              <div className="input-with-icon">
+                <span className="input-icon-left">
+                  <Icon name="key" size={16} />
+                </span>
+                <input
+                  id="newPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  className={`form-input has-icon-left ${fieldErrors.newPassword ? 'has-error' : ''}`}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={isSubmitting}
+                  placeholder="At least 8 characters"
+                  style={{ paddingRight: '40px' }}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  <Icon name={showPassword ? 'eye-off' : 'eye'} size={16} />
+                </button>
+              </div>
               {fieldErrors.newPassword && (
                 <span className="field-error">{fieldErrors.newPassword}</span>
               )}
@@ -123,14 +150,20 @@ export default function ResetPassword() {
               <label htmlFor="confirmPassword" className="form-label">
                 Confirm New Password
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                className={`form-input ${fieldErrors.confirmPassword ? 'has-error' : ''}`}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isSubmitting}
-              />
+              <div className="input-with-icon">
+                <span className="input-icon-left">
+                  <Icon name="key" size={16} />
+                </span>
+                <input
+                  id="confirmPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  className={`form-input has-icon-left ${fieldErrors.confirmPassword ? 'has-error' : ''}`}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={isSubmitting}
+                  placeholder="Confirm new password"
+                />
+              </div>
               {fieldErrors.confirmPassword && (
                 <span className="field-error">{fieldErrors.confirmPassword}</span>
               )}

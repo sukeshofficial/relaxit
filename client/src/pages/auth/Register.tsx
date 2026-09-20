@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import { authApi } from '../../api/auth.api';
+import { Icon } from '../../components/ui/Icon';
 import type { AxiosError } from 'axios';
 import type { ApiErrorResponse } from '../../types/api';
 
@@ -11,6 +12,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -90,8 +92,13 @@ export default function Register() {
   };
 
   return (
-    <AuthLayout title="Create Account" subtitle="Get started with your Relaxit Smart Backrest">
-      {serverError && <div className="alert-box alert-error">{serverError}</div>}
+    <AuthLayout title="Create your Relaxit account" subtitle="Join Relaxit and start tracking your sitting posture">
+      {serverError && (
+        <div className="alert-box alert-error">
+          <Icon name="error" size={18} />
+          <span>{serverError}</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div className="form-group">
@@ -105,6 +112,7 @@ export default function Register() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               disabled={isSubmitting}
+              placeholder="Sukesh"
             />
             {fieldErrors.firstName && <span className="field-error">{fieldErrors.firstName}</span>}
           </div>
@@ -120,6 +128,7 @@ export default function Register() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               disabled={isSubmitting}
+              placeholder="Official"
             />
             {fieldErrors.lastName && <span className="field-error">{fieldErrors.lastName}</span>}
           </div>
@@ -129,15 +138,20 @@ export default function Register() {
           <label htmlFor="email" className="form-label">
             Email Address
           </label>
-          <input
-            id="email"
-            type="email"
-            className={`form-input ${fieldErrors.email ? 'has-error' : ''}`}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="you@example.com"
-          />
+          <div className="input-with-icon">
+            <span className="input-icon-left">
+              <Icon name="user" size={16} />
+            </span>
+            <input
+              id="email"
+              type="email"
+              className={`form-input has-icon-left ${fieldErrors.email ? 'has-error' : ''}`}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="you@example.com"
+            />
+          </div>
           {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
         </div>
 
@@ -145,15 +159,29 @@ export default function Register() {
           <label htmlFor="password" className="form-label">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            className={`form-input ${fieldErrors.password ? 'has-error' : ''}`}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="At least 8 characters"
-          />
+          <div className="input-with-icon">
+            <span className="input-icon-left">
+              <Icon name="key" size={16} />
+            </span>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              className={`form-input has-icon-left ${fieldErrors.password ? 'has-error' : ''}`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="At least 8 characters"
+              style={{ paddingRight: '40px' }}
+            />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              <Icon name={showPassword ? 'eye-off' : 'eye'} size={16} />
+            </button>
+          </div>
           {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
         </div>
 
@@ -161,14 +189,20 @@ export default function Register() {
           <label htmlFor="confirmPassword" className="form-label">
             Confirm Password
           </label>
-          <input
-            id="confirmPassword"
-            type="password"
-            className={`form-input ${fieldErrors.confirmPassword ? 'has-error' : ''}`}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={isSubmitting}
-          />
+          <div className="input-with-icon">
+            <span className="input-icon-left">
+              <Icon name="key" size={16} />
+            </span>
+            <input
+              id="confirmPassword"
+              type={showPassword ? 'text' : 'password'}
+              className={`form-input has-icon-left ${fieldErrors.confirmPassword ? 'has-error' : ''}`}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Confirm password"
+            />
+          </div>
           {fieldErrors.confirmPassword && (
             <span className="field-error">{fieldErrors.confirmPassword}</span>
           )}

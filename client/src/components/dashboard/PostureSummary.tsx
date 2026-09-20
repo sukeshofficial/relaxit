@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PostureResponse, PostureType } from '../../types/api';
+import { Icon } from '../ui/Icon';
 
 interface PostureSummaryProps {
   postureList: PostureResponse[];
@@ -8,28 +9,62 @@ interface PostureSummaryProps {
   onRetry: () => void;
 }
 
+const SAMPLE_POSTURES: PostureResponse[] = [
+  {
+    id: 'sample-posture-1',
+    deviceId: 'sample-dev',
+    sessionId: 'sample-sess-1',
+    postureType: 'GOOD',
+    score: 95,
+    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'sample-posture-2',
+    deviceId: 'sample-dev',
+    sessionId: 'sample-sess-1',
+    postureType: 'SLOUCHING',
+    score: 68,
+    timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'sample-posture-3',
+    deviceId: 'sample-dev',
+    sessionId: 'sample-sess-1',
+    postureType: 'GOOD',
+    score: 92,
+    timestamp: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'sample-posture-4',
+    deviceId: 'sample-dev',
+    sessionId: 'sample-sess-1',
+    postureType: 'LEAN_RIGHT',
+    score: 74,
+    timestamp: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+  },
+];
+
 export const PostureSummary: React.FC<PostureSummaryProps> = ({
   postureList,
   isLoading,
   error,
-  onRetry,
 }) => {
   const getPostureBadge = (type: PostureType) => {
     switch (type) {
       case 'GOOD':
-        return { label: 'GOOD', badgeClass: 'badge-good' };
+        return { label: 'GOOD', badgeClass: 'status-badge online' };
       case 'SLOUCHING':
-        return { label: 'SLOUCHING', badgeClass: 'badge-warning' };
+        return { label: 'SLOUCHING', badgeClass: 'status-badge inactive' };
       case 'LEAN_LEFT':
-        return { label: 'LEAN LEFT', badgeClass: 'badge-info' };
+        return { label: 'LEAN LEFT', badgeClass: 'status-badge offline' };
       case 'LEAN_RIGHT':
-        return { label: 'LEAN RIGHT', badgeClass: 'badge-info' };
+        return { label: 'LEAN RIGHT', badgeClass: 'status-badge offline' };
       case 'FORWARD_LEAN':
-        return { label: 'FORWARD LEAN', badgeClass: 'badge-warning' };
+        return { label: 'FORWARD LEAN', badgeClass: 'status-badge inactive' };
       case 'PROLONGED_POOR_POSTURE':
-        return { label: 'POOR POSTURE', badgeClass: 'badge-danger' };
+        return { label: 'POOR POSTURE', badgeClass: 'status-badge offline' };
       default:
-        return { label: String(type), badgeClass: 'badge-info' };
+        return { label: String(type), badgeClass: 'status-badge offline' };
     }
   };
 
@@ -54,88 +89,85 @@ export const PostureSummary: React.FC<PostureSummaryProps> = ({
     );
   }
 
-  if (error) {
-    return (
-      <div className="dashboard-card">
-        <div className="section-title">Posture Overview</div>
-        <div className="error-state" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
-          <p className="error-state-text">{error}</p>
-          <button onClick={onRetry} className="btn-secondary" style={{ padding: '4px 12px', fontSize: '0.8125rem' }}>
-            Retry Posture
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const displayList = postureList.length > 0 ? postureList : SAMPLE_POSTURES;
+  const isSample = postureList.length === 0 || !!error;
 
-  const latest = postureList.length > 0 ? postureList[0] : null;
-  const recentTimeline = postureList.slice(0, 5);
+  const latest = displayList[0];
+  const recentTimeline = displayList.slice(0, 5);
 
   return (
     <div className="dashboard-card">
       <div className="dashboard-card-header">
-        <div className="section-title" style={{ margin: 0 }}>Posture Overview</div>
-        {latest && (
-          <span style={{ fontSize: '0.75rem', color: '#8b949e', fontFamily: 'monospace' }}>
+        <div className="dashboard-card-title">
+          <Icon name="activity" size={18} />
+          <span>Posture Alignment</span>
+        </div>
+        {isSample ? (
+          <span className="status-badge offline" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>SAMPLE TELEMETRY</span>
+        ) : (
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
             Last: {formatTime(latest.timestamp)}
           </span>
         )}
       </div>
 
-      {latest ? (
-        <div
-          style={{
-            padding: '16px',
-            backgroundColor: '#0d1117',
-            border: '1px solid #21262d',
-            borderRadius: '8px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.75rem', color: '#8b949e', marginBottom: '4px' }}>Current Status</div>
-            {(() => {
-              const badge = getPostureBadge(latest.postureType);
-              return <span className={badge.badgeClass}>{badge.label}</span>;
-            })()}
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.75rem', color: '#8b949e', marginBottom: '4px' }}>Score</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff' }}>{latest.score}</div>
-          </div>
-        </div>
-      ) : (
-        <div style={{ padding: '16px', backgroundColor: '#0d1117', border: '1px solid #21262d', borderRadius: '8px', fontSize: '0.8125rem', color: '#8b949e', textAlign: 'center', marginBottom: '16px' }}>
-          No posture records available today.
-        </div>
-      )}
-
-      {recentTimeline.length > 0 && (
+      <div
+        style={{
+          padding: '16px 20px',
+          backgroundColor: 'var(--color-surface-secondary)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}
+      >
         <div>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#8b949e', marginBottom: '8px', textTransform: 'uppercase' }}>
-            Recent History
-          </div>
-          <div className="timeline-list">
-            {recentTimeline.map((item) => {
-              const badge = getPostureBadge(item.postureType);
-              return (
-                <div key={item.id} className="timeline-item">
-                  <span style={{ color: '#8b949e', fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                    {formatTime(item.timestamp)}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className={badge.badgeClass}>{badge.label}</span>
-                    <span style={{ fontWeight: 600, color: '#f0f6fc' }}>{item.score}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <div style={{ fontSize: '0.78125rem', color: 'var(--color-text-secondary)', marginBottom: '6px', fontWeight: 600 }}>Current Alignment</div>
+          {(() => {
+            const badge = getPostureBadge(latest.postureType);
+            return <span className={badge.badgeClass}>{badge.label}</span>;
+          })()}
         </div>
-      )}
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '0.78125rem', color: 'var(--color-text-secondary)', marginBottom: '2px', fontWeight: 600 }}>Score</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>{latest.score}</div>
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          Recent Telemetry Sequence
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {recentTimeline.map((item) => {
+            const badge = getPostureBadge(item.postureType);
+            return (
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  backgroundColor: 'var(--color-surface-primary)',
+                  border: '1px solid var(--color-border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                }}
+              >
+                <span style={{ color: 'var(--color-text-muted)', fontFamily: 'monospace', fontSize: '0.78125rem' }}>
+                  {formatTime(item.timestamp)}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className={badge.badgeClass}>{badge.label}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>{item.score}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };

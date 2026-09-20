@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { deviceApi } from '../../api/device.api';
 import type { DeviceResponse } from '../../types/api';
+import { Icon } from '../ui/Icon';
 import axios from 'axios';
 
 interface AddDeviceDialogProps {
@@ -57,7 +58,6 @@ export default function AddDeviceDialog({ isOpen, onClose, onSuccess }: AddDevic
         setErrorMsg(res?.message || 'Failed to create device.');
       }
     } catch (err: unknown) {
-
       if (axios.isAxiosError(err) && err.response) {
         if (err.response.status === 409) {
           setErrorMsg('This device is already paired or registered to an account.');
@@ -72,28 +72,35 @@ export default function AddDeviceDialog({ isOpen, onClose, onSuccess }: AddDevic
     }
   };
 
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Pair Relaxit Device</h2>
+          <div className="modal-title-group">
+            <Icon name="devices" size={20} style={{ color: 'var(--color-primary)' }} />
+            <h2 className="modal-title">Pair Relaxit Device</h2>
+          </div>
           <button className="modal-close" onClick={onClose} aria-label="Close dialog">
-            &times;
+            <Icon name="x" size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
-            {errorMsg && <div className="alert-box alert-error">{errorMsg}</div>}
+            {errorMsg && (
+              <div className="alert-box alert-error">
+                <Icon name="error" size={16} />
+                <span>{errorMsg}</span>
+              </div>
+            )}
             {successMsg && (
-              <div className="alert-box" style={{ backgroundColor: '#1f482d', color: '#3fb950', border: '1px solid #238636', padding: '10px 14px', borderRadius: '6px', marginBottom: '16px' }}>
-                ✓ {successMsg}
+              <div className="alert-box alert-success">
+                <Icon name="check-circle" size={16} />
+                <span>{successMsg}</span>
               </div>
             )}
 
             <div className="form-group" style={{ marginBottom: '16px' }}>
-
               <label className="form-label" htmlFor="deviceIdentifier">
                 Device Identifier *
               </label>
@@ -107,8 +114,8 @@ export default function AddDeviceDialog({ isOpen, onClose, onSuccess }: AddDevic
                 disabled={isSubmitting}
                 autoFocus
               />
-              <span style={{ fontSize: '0.75rem', color: '#8b949e' }}>
-                Found on the device label or hardware box.
+              <span style={{ fontSize: '0.78125rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                Found on the physical hardware label or packaging box.
               </span>
             </div>
 
@@ -120,7 +127,7 @@ export default function AddDeviceDialog({ isOpen, onClose, onSuccess }: AddDevic
                 id="deviceName"
                 type="text"
                 className="form-input"
-                placeholder="e.g. Office Chair Backrest"
+                placeholder="e.g. Office Ergonomic Backrest"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isSubmitting}

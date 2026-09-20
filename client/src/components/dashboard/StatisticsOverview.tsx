@@ -1,5 +1,6 @@
 import React from 'react';
 import type { DeviceStatisticsResponse } from '../../types/api';
+import { Icon } from '../ui/Icon';
 
 interface StatisticsOverviewProps {
   statistics: DeviceStatisticsResponse | null;
@@ -45,8 +46,11 @@ export const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
       <section>
         <div className="section-title">Today's Overview</div>
         <div className="error-state">
-          <p className="error-state-text">{error}</p>
-          <button onClick={onRetry} className="btn-secondary" style={{ padding: '4px 12px', fontSize: '0.8125rem' }}>
+          <div className="error-state-left">
+            <Icon name="error" size={18} />
+            <span>{error}</span>
+          </div>
+          <button onClick={onRetry} className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8125rem' }}>
             Retry Statistics
           </button>
         </div>
@@ -58,18 +62,19 @@ export const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
 
   return (
     <section>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="section-title">Today's Overview</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <div className="section-title" style={{ margin: 0 }}>Today's Overview</div>
         {statistics?.date && (
-          <span style={{ fontSize: '0.75rem', color: '#8b949e', fontFamily: 'monospace' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
             {statistics.date}
           </span>
         )}
       </div>
 
       {!hasActivity && (
-        <div style={{ padding: '12px 16px', background: '#161b22', border: '1px solid #30363d', borderRadius: '8px', fontSize: '0.8125rem', color: '#8b949e', marginBottom: '16px' }}>
-          No sitting activity recorded today.
+        <div style={{ padding: '12px 16px', background: 'var(--color-surface-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontSize: '0.84rem', color: 'var(--color-text-secondary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Icon name="info" size={16} />
+          <span>No sitting activity recorded today yet. Start a session or run virtual telemetry.</span>
         </div>
       )}
 
@@ -81,37 +86,42 @@ export const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
             {statistics ? formatMinutes(statistics.totalSittingMinutes) : '—'}
           </div>
           <div className="stat-card-subtext">
-            {statistics ? `${statistics.totalSittingMinutes} total min` : 'No data'}
+            <Icon name="clock" size={14} />
+            <span>{statistics ? `${statistics.totalSittingMinutes} total min` : 'No data'}</span>
           </div>
         </div>
 
         {/* Average Posture Score */}
         <div className="stat-card">
-          <div className="stat-card-label">Average Posture Score</div>
-          <div className="stat-card-value">
+          <div className="stat-card-label">Posture Score</div>
+          <div className="stat-card-value" style={{ color: statistics && statistics.averagePostureScore >= 80 ? 'var(--color-primary)' : 'inherit' }}>
             {statistics && statistics.averagePostureScore !== null && statistics.averagePostureScore !== undefined
               ? `${Math.round(statistics.averagePostureScore)} / 100`
               : '—'}
           </div>
           <div className="stat-card-subtext">
-            {statistics && statistics.averagePostureScore >= 80
-              ? '● Excellent alignment'
-              : statistics && statistics.averagePostureScore >= 60
-                ? '● Moderate alignment'
-                : statistics
-                  ? '● Needs attention'
-                  : 'No data'}
+            <Icon name="activity" size={14} />
+            <span>
+              {statistics && statistics.averagePostureScore >= 80
+                ? 'Good posture alignment'
+                : statistics && statistics.averagePostureScore >= 60
+                  ? 'Moderate posture alignment'
+                  : statistics
+                    ? 'Needs ergonomic attention'
+                    : 'No data'}
+            </span>
           </div>
         </div>
 
         {/* Good Posture */}
         <div className="stat-card">
           <div className="stat-card-label">Good Posture</div>
-          <div className="stat-card-value" style={{ color: '#3fb950' }}>
+          <div className="stat-card-value" style={{ color: 'var(--color-primary)' }}>
             {statistics ? formatMinutes(statistics.goodPostureMinutes) : '—'}
           </div>
           <div className="stat-card-subtext">
-            {statistics ? `Poor: ${formatMinutes(statistics.poorPostureMinutes)}` : 'No data'}
+            <Icon name="check-circle" size={14} />
+            <span>{statistics ? `Poor: ${formatMinutes(statistics.poorPostureMinutes)}` : 'No data'}</span>
           </div>
         </div>
 
@@ -121,7 +131,10 @@ export const StatisticsOverview: React.FC<StatisticsOverviewProps> = ({
           <div className="stat-card-value">
             {statistics ? statistics.totalSessionsCount : '—'}
           </div>
-          <div className="stat-card-subtext">Recorded today</div>
+          <div className="stat-card-subtext">
+            <Icon name="devices" size={14} />
+            <span>Recorded today</span>
+          </div>
         </div>
       </div>
     </section>

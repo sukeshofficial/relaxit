@@ -2,12 +2,14 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import { authApi } from '../../api/auth.api';
+import { Icon } from '../../components/ui/Icon';
 import type { AxiosError } from 'axios';
 import type { ApiErrorResponse } from '../../types/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -61,22 +63,32 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout title="Sign In" subtitle="Welcome back to Relaxit">
-      {serverError && <div className="alert-box alert-error">{serverError}</div>}
+    <AuthLayout title="Welcome back" subtitle="Sign in to your Relaxit account to continue">
+      {serverError && (
+        <div className="alert-box alert-error">
+          <Icon name="error" size={18} />
+          <span>{serverError}</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
         <div className="form-group">
           <label htmlFor="email" className="form-label">
             Email Address
           </label>
-          <input
-            id="email"
-            type="email"
-            className={`form-input ${fieldErrors.email ? 'has-error' : ''}`}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="you@example.com"
-          />
+          <div className="input-with-icon">
+            <span className="input-icon-left">
+              <Icon name="user" size={16} />
+            </span>
+            <input
+              id="email"
+              type="email"
+              className={`form-input has-icon-left ${fieldErrors.email ? 'has-error' : ''}`}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="you@example.com"
+            />
+          </div>
           {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
         </div>
 
@@ -85,19 +97,33 @@ export default function Login() {
             <label htmlFor="password" className="form-label">
               Password
             </label>
-            <Link to="/forgot-password" className="auth-link" style={{ fontSize: '0.8rem' }}>
-              Forgot?
+            <Link to="/forgot-password" className="auth-link" style={{ fontSize: '0.8125rem' }}>
+              Forgot password?
             </Link>
           </div>
-          <input
-            id="password"
-            type="password"
-            className={`form-input ${fieldErrors.password ? 'has-error' : ''}`}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="••••••••"
-          />
+          <div className="input-with-icon">
+            <span className="input-icon-left">
+              <Icon name="key" size={16} />
+            </span>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              className={`form-input has-icon-left ${fieldErrors.password ? 'has-error' : ''}`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="••••••••"
+              style={{ paddingRight: '40px' }}
+            />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              <Icon name={showPassword ? 'eye-off' : 'eye'} size={16} />
+            </button>
+          </div>
           {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
         </div>
 

@@ -11,6 +11,8 @@ import DeviceStatusBadge from '../../components/devices/DeviceStatusBadge';
 import RenameDeviceDialog from '../../components/devices/RenameDeviceDialog';
 import ProvisionDeviceDialog from '../../components/devices/ProvisionDeviceDialog';
 import UnpairDeviceDialog from '../../components/devices/UnpairDeviceDialog';
+import { DeviceSilhouette } from '../../components/devices/DeviceSilhouette';
+import { Icon } from '../../components/ui/Icon';
 import { simulationService } from '../../services/simulation.service';
 
 function formatDate(dateStr: string | null): string {
@@ -116,7 +118,6 @@ export default function DeviceDetail() {
     setErrorMsg(null);
 
     try {
-      // Parallel fetch of device metadata and operational status
       const [deviceRes, statusRes] = await Promise.allSettled([
         deviceApi.getDevice(deviceId),
         deviceApi.getDeviceStatus(deviceId),
@@ -154,7 +155,6 @@ export default function DeviceDetail() {
     } finally {
       setIsLoading(false);
     }
-
   }, [deviceId]);
 
   useEffect(() => {
@@ -176,13 +176,17 @@ export default function DeviceDetail() {
         onLogout={handleLogout}
         activeNav="devices"
       />
-      <div className="devices-container" style={{ padding: '24px', boxSizing: 'border-box' }}>
-
+      <div className="devices-container">
         {/* Breadcrumb */}
         <div className="breadcrumb">
-          <Link to="/devices">&larr; Back to Devices</Link>
+          <Link to="/devices">
+            <Icon name="arrow-left" size={14} />
+            <span>Back to Devices</span>
+          </Link>
           <span>/</span>
-          <span>{device?.name || 'Device Details'}</span>
+          <span style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+            {device?.name || 'Device Details'}
+          </span>
         </div>
 
         {/* Loading State */}
@@ -196,10 +200,15 @@ export default function DeviceDetail() {
         {/* Error State */}
         {!isLoading && errorMsg && (
           <div className="error-state">
-            <h3 className="error-state-title">Device Unavailable</h3>
-            <p className="error-state-text">{errorMsg}</p>
+            <div className="error-state-left">
+              <Icon name="error" size={20} />
+              <div>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: 'var(--color-error)' }}>Device Unavailable</h3>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>{errorMsg}</p>
+              </div>
+            </div>
             <button className="btn-secondary" onClick={() => navigate('/devices')}>
-              Return to Devices List
+              Return to Devices
             </button>
           </div>
         )}
@@ -209,23 +218,131 @@ export default function DeviceDetail() {
           <>
             {/* Main Info Header */}
             <div className="detail-header">
-              <div>
-                <h1 className="detail-title">{device.name}</h1>
-                <span className="detail-identifier">{device.deviceIdentifier}</span>
+              <div className="detail-title-wrapper">
+                <DeviceSilhouette size="lg" status={statusInfo?.status || device.status} />
+                <div>
+                  <h1 className="detail-title">{device.name}</h1>
+                  <span className="detail-identifier">{device.deviceIdentifier}</span>
+                </div>
               </div>
               <div>
                 <DeviceStatusBadge status={statusInfo?.status || device.status} />
               </div>
             </div>
 
+            {/* Virtual Device Simulator Card */}
+            <div className="virtual-runner-panel">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Icon name="cpu" size={20} style={{ color: 'var(--color-primary-dark)' }} />
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-primary-dark)' }}>
+                    Virtual Relaxit Runner
+                  </h3>
+                </div>
+                <span className={`status-badge ${simStatus.running ? 'online' : 'offline'}`}>
+                  <span className="status-badge-dot" />
+                  {simStatus.running ? 'SIMULATING' : 'STOPPED'}
+                </span>
+              </div>
+
+              {!simStatus.running ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    Run a virtual Relaxit hardware device to generate live pressure sensor telemetry, evaluate posture, and trigger real-time alerts.
+                  </p>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      type="password"
+                      placeholder="Device Secret (Optional - Auto-filled)"
+                      className="form-input"
+                      style={{ maxWidth: '320px', backgroundColor: 'var(--color-surface-primary)' }}
+                      value={simSecretInput}
+                      onChange={(e) => setSimSecretInput(e.target.value)}
+                    />
+                    <button
+                      className="btn-primary"
+                      onClick={handleRunDevice}
+                      disabled={isStartingSim}
+                    >
+                      <Icon name="play" size={16} />
+                      <span>{isStartingSim ? 'Starting...' : 'Start Virtual Telemetry'}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', background: 'var(--color-surface-primary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-primary-border)' }}>
+                    <div>
+                      <span style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>Simulated Scenario</span>
+                      <select
+                        className="form-input"
+                        value={selectedScenario}
+                        onChange={(e) => handleScenarioChange(e.target.value)}
+                        style={{ padding: '6px 10px', fontSize: '0.84rem' }}
+                      >
+                        <option value="NORMAL_SITTING">Normal Sitting</option>
+                        <option value="LEAN_LEFT">Lean Left</option>
+                        <option value="LEAN_RIGHT">Lean Right</option>
+                        <option value="FORWARD_LEAN">Forward Lean</option>
+                        <option value="SLOUCHING">Slouching</option>
+                        <option value="FREQUENT_MOVEMENT">Frequent Movement</option>
+                        <option value="PROLONGED_POOR_POSTURE">Prolonged Poor Posture</option>
+                        <option value="USER_LEAVES">User Leaves</option>
+                        <option value="LOW_BATTERY">Low Battery</option>
+                        <option value="LONG_RUN">Long Run Scenario</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>Time Multiplier</span>
+                      <select
+                        className="form-input"
+                        value={selectedSpeed}
+                        onChange={(e) => handleSpeedChange(Number(e.target.value))}
+                        style={{ padding: '6px 10px', fontSize: '0.84rem' }}
+                      >
+                        <option value={1}>1x (Real-time)</option>
+                        <option value={2}>2x Speed</option>
+                        <option value={10}>10x Speed</option>
+                        <option value={60}>60x Speed</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>Battery</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '1rem', marginTop: '6px' }}>
+                        <Icon name="battery" size={16} />
+                        <span>{simStatus.batteryLevel}%</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>Temperature</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '1rem', marginTop: '6px' }}>
+                        <Icon name="thermometer" size={16} />
+                        <span>{simStatus.temperature} °C</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button className="btn-danger" onClick={handleStopDevice}>
+                      <Icon name="x" size={16} />
+                      <span>Stop Simulation</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Overview Grids */}
             <div className="detail-grid">
               {/* Card 1: Operational Status */}
               <div className="detail-card">
-                <h3 className="detail-card-title">Operational Status</h3>
+                <h3 className="detail-card-title">Operational Telemetry</h3>
                 <div className="detail-list">
                   <div className="detail-item">
-                    <span className="detail-item-label">Status</span>
+                    <span className="detail-item-label">Connection</span>
                     <span className="detail-item-value">
                       <DeviceStatusBadge status={statusInfo?.status || device.status} />
                     </span>
@@ -250,7 +367,7 @@ export default function DeviceDetail() {
                 <h3 className="detail-card-title">Device Metadata</h3>
                 <div className="detail-list">
                   <div className="detail-item">
-                    <span className="detail-item-label">Device ID</span>
+                    <span className="detail-item-label">Device UUID</span>
                     <span className="detail-item-value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
                       {device.id}
                     </span>
@@ -267,111 +384,21 @@ export default function DeviceDetail() {
               </div>
             </div>
 
-            {/* Virtual Device Simulator Card */}
-            <div className="detail-card" style={{ marginBottom: '24px', borderLeft: simStatus.running ? '4px solid #10b981' : '4px solid #6b7280' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 className="detail-card-title" style={{ margin: 0 }}>Virtual Device Runner</h3>
-                <span className={`status-badge ${simStatus.running ? 'status-online' : 'status-offline'}`}>
-                  ● {simStatus.running ? 'RUNNING' : 'STOPPED'}
-                </span>
-              </div>
-
-              <div className="detail-list" style={{ marginTop: '16px' }}>
-                {!simStatus.running ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>
-                      Run a virtual Relaxit device to generate realistic sensor telemetry and process sessions/posture in real-time.
-                    </p>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      <input
-                        type="password"
-                        placeholder="Device Secret (Optional - Auto-filled if blank)"
-                        className="form-input"
-                        style={{ maxWidth: '340px' }}
-                        value={simSecretInput}
-                        onChange={(e) => setSimSecretInput(e.target.value)}
-                      />
-                      <button
-                        className="btn-primary"
-                        onClick={handleRunDevice}
-                        disabled={isStartingSim}
-                      >
-                        {isStartingSim ? 'Starting...' : 'Run Device'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-                      <div>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Scenario</span>
-                        <select
-                          className="form-input"
-                          value={selectedScenario}
-                          onChange={(e) => handleScenarioChange(e.target.value)}
-                          style={{ marginTop: '4px', padding: '6px 12px' }}
-                        >
-                          <option value="NORMAL_SITTING">Normal Sitting</option>
-                          <option value="LEAN_LEFT">Lean Left</option>
-                          <option value="LEAN_RIGHT">Lean Right</option>
-                          <option value="FORWARD_LEAN">Forward Lean</option>
-                          <option value="SLOUCHING">Slouching</option>
-                          <option value="FREQUENT_MOVEMENT">Frequent Movement</option>
-                          <option value="PROLONGED_POOR_POSTURE">Prolonged Poor Posture</option>
-                          <option value="USER_LEAVES">User Leaves</option>
-                          <option value="LOW_BATTERY">Low Battery</option>
-                          <option value="LONG_RUN">Long Run Scenario</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Time Speed</span>
-                        <select
-                          className="form-input"
-                          value={selectedSpeed}
-                          onChange={(e) => handleSpeedChange(Number(e.target.value))}
-                          style={{ marginTop: '4px', padding: '6px 12px' }}
-                        >
-                          <option value={1}>1x (Real-time)</option>
-                          <option value={2}>2x</option>
-                          <option value={10}>10x</option>
-                          <option value={60}>60x</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Battery</span>
-                        <span style={{ fontWeight: 600, marginTop: '8px', display: 'block' }}>{simStatus.batteryLevel}%</span>
-                      </div>
-
-                      <div>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Temperature</span>
-                        <span style={{ fontWeight: 600, marginTop: '8px', display: 'block' }}>{simStatus.temperature} °C</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <button className="btn-danger" onClick={handleStopDevice}>
-                        Stop Device
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Actions Section */}
             <div className="detail-actions-card">
-              <h3 className="detail-card-title">Device Management Actions</h3>
+              <h3 className="detail-card-title">Device Settings & Management</h3>
               <div className="detail-actions-list">
                 <button className="btn-secondary" onClick={() => setIsRenameOpen(true)}>
-                  &#9998; Rename Device
+                  <Icon name="edit" size={16} />
+                  <span>Rename Device</span>
                 </button>
-                <button className="btn-primary" onClick={() => setIsProvisionOpen(true)}>
-                  &#128273; Provision Device Secret
+                <button className="btn-secondary" onClick={() => setIsProvisionOpen(true)}>
+                  <Icon name="key" size={16} />
+                  <span>Provision Secret</span>
                 </button>
                 <button className="btn-danger" onClick={() => setIsUnpairOpen(true)}>
-                  &#128465; Unpair Device
+                  <Icon name="trash" size={16} />
+                  <span>Unpair Device</span>
                 </button>
               </div>
             </div>

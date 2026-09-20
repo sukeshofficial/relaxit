@@ -1,17 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { authApi } from '../../api/auth.api';
-
 import { deviceApi } from '../../api/device.api';
 import type { DeviceResponse } from '../../types/api';
-
 import axios from 'axios';
 
 import DeviceCard from '../../components/devices/DeviceCard';
 import AddDeviceDialog from '../../components/devices/AddDeviceDialog';
-import '../../styles/devices.css';
-
 import { DashboardHeader } from '../../components/dashboard/DashboardHeader';
 import { useAuth } from '../../hooks/useAuth';
+import { Icon } from '../../components/ui/Icon';
+import '../../styles/devices.css';
 
 export default function DeviceList() {
   const { user } = useAuth();
@@ -32,8 +30,6 @@ export default function DeviceList() {
         setErrorMsg('Failed to load devices.');
       }
     } catch (err: unknown) {
-
-
       if (axios.isAxiosError(err) && err.response) {
         if (err.response.status === 403) {
           setErrorMsg('Authentication session required (403 Forbidden). Please sign out and sign in again.');
@@ -72,8 +68,7 @@ export default function DeviceList() {
         onLogout={handleLogout}
         activeNav="devices"
       />
-      <div className="devices-container" style={{ padding: '24px', boxSizing: 'border-box' }}>
-
+      <div className="devices-container">
         {/* Toolbar */}
         <div className="devices-toolbar">
           <div className="devices-title-area">
@@ -82,7 +77,8 @@ export default function DeviceList() {
           </div>
 
           <button className="btn-primary" onClick={() => setIsAddOpen(true)}>
-            + Pair New Device
+            <Icon name="plus" size={16} />
+            <span>Pair New Device</span>
           </button>
         </div>
 
@@ -110,32 +106,39 @@ export default function DeviceList() {
         {/* Error State */}
         {!isLoading && errorMsg && (
           <div className="error-state">
-            <h3 className="error-state-title">Failed to Load Devices</h3>
-            <p className="error-state-text">{errorMsg}</p>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+            <div className="error-state-left">
+              <Icon name="error" size={20} />
+              <div>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: 'var(--color-error)' }}>Failed to Load Devices</h3>
+                <p style={{ margin: 0, fontSize: '0.875rem' }}>{errorMsg}</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button className="btn-secondary" onClick={fetchDevices}>
                 Retry
               </button>
               <button className="btn-primary" onClick={() => setIsAddOpen(true)}>
-                + Pair New Device Anyway
+                + Pair Device
               </button>
             </div>
           </div>
         )}
-
 
         {/* Loaded Content */}
         {!isLoading && !errorMsg && (
           <>
             {devices.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-state-icon">&#128268;</div>
-                <h3 className="empty-state-title">No Relaxit devices yet</h3>
+                <div className="empty-state-icon">
+                  <Icon name="backrest" size={32} />
+                </div>
+                <h3 className="empty-state-title">No Relaxit devices paired</h3>
                 <p className="empty-state-text">
-                  Connect your Relaxit backrest to start tracking your sitting sessions, posture, and wellness insights.
+                  Pair your Relaxit smart backrest to start tracking posture alignment, sitting sessions, and ergonomics.
                 </p>
                 <button className="btn-primary" onClick={() => setIsAddOpen(true)}>
-                  Add Device
+                  <Icon name="plus" size={16} />
+                  <span>Pair First Device</span>
                 </button>
               </div>
             ) : (

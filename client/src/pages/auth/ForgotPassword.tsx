@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import { authApi } from '../../api/auth.api';
+import { Icon } from '../../components/ui/Icon';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -23,10 +24,9 @@ export default function ForgotPassword() {
 
     setIsSubmitting(true);
     try {
-      // Backend generic response preserved intentionally
       await authApi.forgotPassword({ email: email.trim() });
     } catch {
-      // Intentionally preserve generic response regardless of backend error or non-existence
+      // Intentionally preserve generic response regardless of backend error
     } finally {
       setIsSubmitting(false);
       setIsSubmitted(true);
@@ -34,16 +34,17 @@ export default function ForgotPassword() {
   };
 
   return (
-    <AuthLayout title="Forgot Password" subtitle="Reset your Relaxit password">
+    <AuthLayout title="Forgot your password?" subtitle="Enter your registered email and we'll send reset instructions">
       {isSubmitted ? (
         <div style={{ textAlign: 'center' }}>
           <div className="alert-box alert-success" style={{ marginBottom: '20px' }}>
-            If an account exists for <strong>{email}</strong>, you will receive password reset instructions.
+            <Icon name="check-circle" size={18} />
+            <span>If an account exists for <strong>{email}</strong>, password reset instructions have been sent.</span>
           </div>
-          <p style={{ fontSize: '0.875rem', color: '#8b949e', marginBottom: '20px' }}>
-            Please check your inbox and click the reset link provided.
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
+            Please check your email inbox and follow the link to reset your password.
           </p>
-          <Link to="/login" className="auth-button" style={{ display: 'inline-block', textDecoration: 'none' }}>
+          <Link to="/login" className="auth-button" style={{ display: 'inline-flex', textDecoration: 'none' }}>
             Back to Sign In
           </Link>
         </div>
@@ -53,15 +54,20 @@ export default function ForgotPassword() {
             <label htmlFor="email" className="form-label">
               Account Email Address
             </label>
-            <input
-              id="email"
-              type="email"
-              className={`form-input ${fieldError ? 'has-error' : ''}`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isSubmitting}
-              placeholder="you@example.com"
-            />
+            <div className="input-with-icon">
+              <span className="input-icon-left">
+                <Icon name="user" size={16} />
+              </span>
+              <input
+                id="email"
+                type="email"
+                className={`form-input has-icon-left ${fieldError ? 'has-error' : ''}`}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="you@example.com"
+              />
+            </div>
             {fieldError && <span className="field-error">{fieldError}</span>}
           </div>
 

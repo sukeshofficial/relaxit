@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoAsset from '../../assets/wordmark.svg';
+import { Icon } from '../ui/Icon';
 import type { DeviceResponse, DeviceStatus } from '../../types/api';
 
 interface DashboardHeaderProps {
@@ -11,7 +12,7 @@ interface DashboardHeaderProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
   onLogout?: () => void;
-  activeNav?: 'dashboard' | 'devices' | 'details';
+  activeNav?: 'dashboard' | 'devices' | 'alerts' | 'settings';
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -22,7 +23,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onRefresh,
   isRefreshing,
   onLogout,
-  activeNav = 'dashboard',
+  activeNav,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,43 +65,65 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <header className="dashboard-header-bar">
-      <div className="dashboard-header-content">
-        {/* Left branding & Greeting */}
-        <div className="dashboard-header-brand">
+    <header className="app-header">
+      <div className="app-header-container">
+        {/* Brand Mark & Tagline */}
+        <div className="app-header-left">
           <img
             src={logoAsset}
             alt="Relaxit"
-            className="dashboard-logo"
+            className="app-logo"
             onClick={() => navigate('/dashboard')}
           />
-          <div className="dashboard-divider" />
-          <p className="dashboard-greeting">
-            {getGreeting()},{' '}
-            <strong>{userFirstName || 'there'}</strong>
-          </p>
+          <div className="app-header-divider" />
+          <div className="app-header-greeting">
+            <span className="greeting-text">{getGreeting()}, <strong>{userFirstName || 'there'}</strong> 👋</span>
+            <span className="greeting-tagline">Sit Better &bull; Live Healthier</span>
+          </div>
         </div>
 
-        {/* Right actions: Selector, Navigation links, Refresh & Sign Out */}
-        <div className="dashboard-header-controls">
+        {/* Center Navigation Tabs */}
+        <nav className="app-header-nav">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className={`nav-tab ${currentNav === 'dashboard' ? 'active' : ''}`}
+          >
+            <Icon name="dashboard" size={16} />
+            <span>Dashboard</span>
+          </button>
+          <button
+            onClick={() => navigate('/devices')}
+            className={`nav-tab ${currentNav === 'devices' ? 'active' : ''}`}
+          >
+            <Icon name="devices" size={16} />
+            <span>Devices</span>
+          </button>
+        </nav>
+
+        {/* Right Controls */}
+        <div className="app-header-right">
           {devices.length > 1 && onSelectDevice ? (
-            <select
-              value={selectedDevice?.id || ''}
-              onChange={(e) => {
-                const target = devices.find((d) => d.id === e.target.value);
-                if (target) onSelectDevice(target);
-              }}
-              className="device-select-input"
-            >
-              {devices.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+            <div className="device-select-wrapper">
+              <select
+                value={selectedDevice?.id || ''}
+                onChange={(e) => {
+                  const target = devices.find((d) => d.id === e.target.value);
+                  if (target) onSelectDevice(target);
+                }}
+                className="device-select-dropdown"
+              >
+                {devices.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <Icon name="chevron-down" size={14} className="select-arrow" />
+            </div>
           ) : selectedDevice ? (
-            <div className="detail-identifier" style={{ fontSize: '0.8125rem' }}>
-              {selectedDevice.name}
+            <div className="selected-device-pill">
+              <Icon name="backrest" size={14} />
+              <span>{selectedDevice.name}</span>
             </div>
           ) : null}
 
@@ -110,65 +133,25 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <button
               onClick={onRefresh}
               disabled={isRefreshing}
-              title="Refresh dashboard data"
-              className="btn-icon"
+              title="Refresh telemetry"
+              className="btn-icon-action"
             >
-              <svg
-                style={{
-                  width: '16px',
-                  height: '16px',
-                  animation: isRefreshing ? 'skeleton-shimmer 1s linear infinite' : 'none',
-                }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+              <Icon
+                name="refresh"
+                size={16}
+                className={isRefreshing ? 'spin-animation' : ''}
+              />
             </button>
           )}
-
-          {/* Navigation Links */}
-          <button
-            onClick={() => navigate('/dashboard')}
-            className={`btn-secondary ${currentNav === 'dashboard' ? 'active' : ''}`}
-            style={{
-              fontSize: '0.8125rem',
-              padding: '6px 12px',
-              backgroundColor: currentNav === 'dashboard' ? '#21262d' : undefined,
-              borderColor: currentNav === 'dashboard' ? '#58a6ff' : undefined,
-              color: currentNav === 'dashboard' ? '#58a6ff' : undefined,
-            }}
-          >
-            Dashboard
-          </button>
-
-          <button
-            onClick={() => navigate('/devices')}
-            className={`btn-secondary ${currentNav === 'devices' ? 'active' : ''}`}
-            style={{
-              fontSize: '0.8125rem',
-              padding: '6px 12px',
-              backgroundColor: currentNav === 'devices' ? '#21262d' : undefined,
-              borderColor: currentNav === 'devices' ? '#58a6ff' : undefined,
-              color: currentNav === 'devices' ? '#58a6ff' : undefined,
-            }}
-          >
-            Device Management
-          </button>
 
           {onLogout && (
             <button
               onClick={onLogout}
-              className="btn-secondary"
-              style={{ fontSize: '0.8125rem', padding: '6px 12px', color: '#f85149', borderColor: '#30363d' }}
+              className="btn-signout-action"
+              title="Sign Out"
             >
-              Sign Out
+              <Icon name="logout" size={16} />
+              <span className="signout-label">Sign Out</span>
             </button>
           )}
         </div>
@@ -176,5 +159,3 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     </header>
   );
 };
-
-
