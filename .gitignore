@@ -31,3 +31,6 @@ application-local.properties
 application-local.yml
 application-dev.properties
 application-dev.yml
+
+# Ignore pre-built deployment JARs (rebuilt dynamically by deploy.ps1)
+deployment/*.jar
