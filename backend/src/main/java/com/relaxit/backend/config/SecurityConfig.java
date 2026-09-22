@@ -59,11 +59,6 @@ public class SecurityConfig {
   }
 
   @Bean
-  public org.springframework.web.filter.CorsFilter corsFilter() {
-    return new org.springframework.web.filter.CorsFilter(corsConfigurationSource());
-  }
-
-  @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -80,10 +75,10 @@ public class SecurityConfig {
                 "/api/v1/auth/reset-password",
                 "/api/v1/auth/logout",
                 "/api/v1/health",
+                "/api/v1/debug/**",
                 "/api/v1/dev/simulation/**")
             .permitAll()
             .anyRequest().authenticated())
-        .addFilterBefore(corsFilter(), org.springframework.security.web.session.ConcurrentSessionFilter.class)
         .addFilterBefore(deviceAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
