@@ -2,10 +2,8 @@ package com.relaxit.backend.config;
 
 import com.relaxit.backend.security.DeviceAuthenticationFilter;
 import com.relaxit.backend.security.JwtAuthenticationFilter;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -18,7 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,13 +51,11 @@ public class SecurityConfig {
     configuration.setAllowedOrigins(List.of(
         "https://relaxit.forgegrid.in",
         "http://localhost:5173",
-        "http://localhost:3000"
-    ));
+        "http://localhost:3000"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList(
         "Authorization", "Content-Type", "Accept", "Origin",
-        "X-Requested-With", "Access-Control-Request-Method", "Access-Control-Request-Headers"
-    ));
+        "X-Requested-With", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
     configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
     configuration.setAllowCredentials(true);
     configuration.setMaxAge(3600L);
@@ -68,20 +63,6 @@ public class SecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
-  }
-
-  /**
-   * Register CorsFilter in the OUTER Tomcat servlet filter chain at highest precedence.
-   * This ensures CORS headers are attached before Spring Security's DelegatingFilterProxy runs,
-   * so preflight OPTIONS responses always contain Access-Control-Allow-Origin.
-   */
-  @Bean
-  public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
-    FilterRegistrationBean<CorsFilter> registration = new FilterRegistrationBean<>(
-        new CorsFilter(corsConfigurationSource())
-    );
-    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
-    return registration;
   }
 
   @Bean
