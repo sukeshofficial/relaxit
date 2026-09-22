@@ -43,10 +43,11 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of(
+    configuration.setAllowedOriginPatterns(List.of(
         "https://relaxit.forgegrid.in",
-        "http://localhost:5173",
-        "http://localhost:3000"
+        "https://*.forgegrid.in",
+        "https://*.catalystappsail.in",
+        "http://localhost:*"
     ));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
