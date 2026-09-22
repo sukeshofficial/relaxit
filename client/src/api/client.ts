@@ -50,6 +50,10 @@ const isPublicAuthEndpoint = (url?: string): boolean => {
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    console.log(`[API Diagnostic] Request: ${config.method?.toUpperCase()} ${config.url}`, {
+      baseURL: config.baseURL,
+      headers: config.headers,
+    });
     if (isPublicAuthEndpoint(config.url)) {
       delete config.headers.Authorization;
     } else {
@@ -60,7 +64,10 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error: AxiosError) => Promise.reject(error)
+  (error: AxiosError) => {
+    console.error('[API Diagnostic] Request Error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Custom property on InternalAxiosRequestConfig to prevent infinite retries
@@ -135,6 +142,12 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    if (error.response) {
+      console.error('[API Diagnostic] Response Error:', error.response.status, error.response.data);
+    } else {
+      console.error('[API Diagnostic] Network/CORS Error (No Response):', error.message, error);
     }
 
     return Promise.reject(error);
