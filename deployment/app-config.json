@@ -1,5 +1,5 @@
 {
-	"command": "java -jar backend-0.0.1-SNAPSHOT.jar --server.port=${X_ZGS_PORT:${PORT:8080}}",
+	"command": "java -jar backend-0.0.1-SNAPSHOT.jar --server.port=${X_ZOHO_CATALYST_LISTEN_PORT:${X_ZGS_PORT:${PORT:8080}}}",
 	"build_path": "./",
 	"stack": "java21",
 	"env_variables": {},
