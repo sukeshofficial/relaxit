@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +48,6 @@ public class SecurityConfig {
         "http://localhost:5173",
         "http://localhost:3000"
     ));
-    configuration.setAllowedOriginPatterns(List.of("*"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
@@ -57,11 +55,6 @@ public class SecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
-  }
-
-  @Bean
-  public CorsFilter corsFilter() {
-    return new CorsFilter(corsConfigurationSource());
   }
 
   @Bean
@@ -84,7 +77,6 @@ public class SecurityConfig {
                 "/api/v1/dev/simulation/**")
             .permitAll()
             .anyRequest().authenticated())
-        .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(deviceAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
