@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/dev/simulation")
-@Profile({ "dev", "local" })
+@Profile({ "dev", "local", "prod", "default" })
 public class DevSimulationController {
 
   private final VirtualDeviceRunner virtualDeviceRunner;
