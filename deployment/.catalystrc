@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "8804000000021014",
+      "name": "relaxit",
+      "domain": {
+        "id": "50046100150",
+        "name": "relaxit-60032055879.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60032055879",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

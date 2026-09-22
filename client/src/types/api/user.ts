@@ -1,11 +1,13 @@
 export interface AuthUserResponse {
-  id: number;
+  id: number | string;
   email: string;
-  fullName: string;
-  role: string;
-  emailVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  role?: string;
+  emailVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UpdateProfileRequest {

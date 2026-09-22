@@ -251,12 +251,13 @@ export default function Dashboard() {
     );
   }
 
+  console.log(user)
   // Zero devices state
   if (devices.length === 0 || !selectedDevice) {
     return (
       <div className="dashboard-page">
         <DashboardHeader
-          userFirstName={user?.fullName || user?.email}
+          userFirstName={user?.firstName || user?.fullName || user?.email}
           devices={[]}
           selectedDevice={null}
           onSelectDevice={() => { }}
@@ -274,7 +275,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard-page">
       <DashboardHeader
-        userFirstName={user?.fullName || user?.email}
+        userFirstName={user?.firstName || user?.fullName || user?.email}
         devices={devices}
         selectedDevice={selectedDevice}
         onSelectDevice={(device) => setSelectedDevice(device)}
