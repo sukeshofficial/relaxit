@@ -6,7 +6,7 @@ import com.relaxit.backend.repository.DeviceRepository;
 import com.relaxit.backend.security.DeviceAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +27,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Profile({ "dev", "local" })
 public class VirtualDeviceRunner {
 
   private static final Logger log = LoggerFactory.getLogger(VirtualDeviceRunner.class);

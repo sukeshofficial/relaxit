@@ -3,7 +3,7 @@ package com.relaxit.backend.simulator;
 import com.relaxit.backend.entity.Device;
 import com.relaxit.backend.repository.DeviceRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.context.annotation.Profile;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/dev/simulation")
-@Profile({ "dev", "local", "prod", "default" })
 public class DevSimulationController {
 
   private final VirtualDeviceRunner virtualDeviceRunner;
